@@ -70,6 +70,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WeaveVault__factory>;
     getContractFactory(
+      name: "IWeaveVault",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWeaveVault__factory>;
+    getContractFactory(
       name: "WeaveZapIn",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WeaveZapIn__factory>;
@@ -145,6 +149,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.WeaveVault>;
     getContractAt(
+      name: "IWeaveVault",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWeaveVault>;
+    getContractAt(
       name: "WeaveZapIn",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -207,6 +216,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveVault>;
     deployContract(
+      name: "IWeaveVault",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWeaveVault>;
+    deployContract(
       name: "WeaveZapIn",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveZapIn>;
@@ -281,6 +294,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveVault>;
+    deployContract(
+      name: "IWeaveVault",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWeaveVault>;
     deployContract(
       name: "WeaveZapIn",
       args: any[],

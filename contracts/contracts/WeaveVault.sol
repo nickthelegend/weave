@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
+/**
+ * @title WeaveVault
+ * @dev Main vault for Weave - aggregates yield on Initia.
+ */
 contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
@@ -18,10 +22,16 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     mapping(address => uint256) public depositTimestamp;
 
     address public keeper;
+    uint256 public protocolFee = 1000; // 10% in basis points
+    address public feeRecipient;
+    uint256 public totalProtocolFeesAccrued;
+    uint256 public totalYieldGenerated;
 
     event Deposited(address indexed user, uint256 amount, uint256 shares);
     event Withdrawn(address indexed user, uint256 amount, uint256 shares);
-    event Harvested(uint256 yieldAmount, uint256 timestamp);
+    event Harvested(uint256 netYield, uint256 fee, uint256 timestamp);
+    event KeeperUpdated(address indexed keeper);
+    event FeeRecipientUpdated(address indexed recipient);
 
     modifier onlyKeeper() {
         require(msg.sender == keeper || msg.sender == owner(), "Not keeper");
@@ -31,17 +41,33 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     constructor(address _depositToken) Ownable(msg.sender) {
         depositToken = IERC20(_depositToken);
         keeper = msg.sender;
+        feeRecipient = msg.sender;
     }
 
-    function deposit(uint256 amount) external {
+    function setPaused(bool _paused) external onlyOwner {
+        if (_paused) _pause();
+        else _unpause();
+    }
+
+    function setKeeper(address _keeper) external onlyOwner {
+        keeper = _keeper;
+        emit KeeperUpdated(_keeper);
+    }
+
+    function setFeeRecipient(address _recipient) external onlyOwner {
+        feeRecipient = _recipient;
+        emit FeeRecipientUpdated(_recipient);
+    }
+
+    function deposit(uint256 amount) external nonReentrant whenNotPaused {
         _depositFor(msg.sender, amount);
     }
 
-    function depositFor(address user, uint256 amount) external {
+    function depositFor(address user, uint256 amount) external nonReentrant whenNotPaused {
         _depositFor(user, amount);
     }
 
-    function _depositFor(address user, uint256 amount) internal nonReentrant whenNotPaused {
+    function _depositFor(address user, uint256 amount) internal {
         require(amount > 0, "Amount must be > 0");
 
         uint256 shares;
@@ -61,24 +87,30 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         emit Deposited(user, amount, shares);
     }
 
-    function withdraw(uint256 shareAmount) external nonReentrant {
+    function withdraw(uint256 shareAmount) external nonReentrant whenNotPaused {
         require(shareAmount > 0, "Share amount must be > 0");
         require(userShares[msg.sender] >= shareAmount, "Insufficient shares");
 
-        uint256 amount = (shareAmount * totalDeposited) / totalShares;
+        uint256 usdcAmount = (shareAmount * totalDeposited) / totalShares;
 
         userShares[msg.sender] -= shareAmount;
         totalShares -= shareAmount;
-        totalDeposited -= amount;
+        totalDeposited -= usdcAmount;
 
-        depositToken.safeTransfer(msg.sender, amount);
+        depositToken.safeTransfer(msg.sender, usdcAmount);
 
-        emit Withdrawn(msg.sender, amount, shareAmount);
+        emit Withdrawn(msg.sender, usdcAmount, shareAmount);
     }
 
     function harvest(uint256 yieldAmount) external onlyKeeper whenNotPaused {
-        totalDeposited += yieldAmount;
-        emit Harvested(yieldAmount, block.timestamp);
+        uint256 fee = (yieldAmount * protocolFee) / 10000;
+        uint256 netYield = yieldAmount - fee;
+
+        totalDeposited += netYield;
+        totalProtocolFeesAccrued += fee;
+        totalYieldGenerated += yieldAmount;
+
+        emit Harvested(netYield, fee, block.timestamp);
     }
 
     function getUserValue(address user) public view returns (uint256) {
@@ -87,11 +119,23 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     }
 
     function getPricePerShare() public view returns (uint256) {
-        if (totalShares == 0) return 1e18;
-        return (totalDeposited * 1e18) / totalShares;
+        if (totalShares == 0) return 1e6; // 1 USDC (6 decimals)
+        return (totalDeposited * 1e6) / totalShares;
     }
 
-    function pause() external onlyOwner { _pause(); }
-    function unpause() external onlyOwner { _unpause(); }
-    function setKeeper(address _keeper) external onlyOwner { keeper = _keeper; }
+    function getVaultStats() external view returns (
+        uint256 _totalDeposited,
+        uint256 _totalShares,
+        uint256 _totalYieldGenerated,
+        uint256 _totalProtocolFeesAccrued,
+        uint256 _pricePerShare
+    ) {
+        return (
+            totalDeposited,
+            totalShares,
+            totalYieldGenerated,
+            totalProtocolFeesAccrued,
+            getPricePerShare()
+        );
+    }
 }

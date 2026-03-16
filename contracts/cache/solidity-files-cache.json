@@ -415,8 +415,8 @@
       ]
     },
     "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveZapIn.sol": {
-      "lastModificationDate": 1773694957975,
-      "contentHash": "7a7a5ee367a3793d485e201b7188da3d",
+      "lastModificationDate": 1773695315243,
+      "contentHash": "beb540bcae5036abf948df8afaff0691",
       "sourceName": "contracts/WeaveZapIn.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -444,19 +444,19 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
-        "./WeaveVault.sol"
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
+        "IWeaveVault",
         "WeaveZapIn"
       ]
     },
     "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveVault.sol": {
-      "lastModificationDate": 1773694966836,
-      "contentHash": "06d5a37a55210795c2a1d06885f1892c",
+      "lastModificationDate": 1773695350176,
+      "contentHash": "e4281f20cec945e5b8d49232bc56ae30",
       "sourceName": "contracts/WeaveVault.sol",
       "solcConfig": {
         "version": "0.8.20",

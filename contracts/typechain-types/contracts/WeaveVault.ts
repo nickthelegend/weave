@@ -30,19 +30,24 @@ export interface WeaveVaultInterface extends Interface {
       | "depositFor"
       | "depositTimestamp"
       | "depositToken"
+      | "feeRecipient"
       | "getPricePerShare"
       | "getUserValue"
+      | "getVaultStats"
       | "harvest"
       | "keeper"
       | "owner"
-      | "pause"
       | "paused"
+      | "protocolFee"
       | "renounceOwnership"
+      | "setFeeRecipient"
       | "setKeeper"
+      | "setPaused"
       | "totalDeposited"
+      | "totalProtocolFeesAccrued"
       | "totalShares"
+      | "totalYieldGenerated"
       | "transferOwnership"
-      | "unpause"
       | "userShares"
       | "withdraw"
   ): FunctionFragment;
@@ -50,7 +55,9 @@ export interface WeaveVaultInterface extends Interface {
   getEvent(
     nameOrSignatureOrTopic:
       | "Deposited"
+      | "FeeRecipientUpdated"
       | "Harvested"
+      | "KeeperUpdated"
       | "OwnershipTransferred"
       | "Paused"
       | "Unpaused"
@@ -74,6 +81,10 @@ export interface WeaveVaultInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "feeRecipient",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPricePerShare",
     values?: undefined
   ): string;
@@ -82,23 +93,39 @@ export interface WeaveVaultInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getVaultStats",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "harvest",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "keeper", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "protocolFee",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setKeeper",
+    functionFragment: "setFeeRecipient",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setKeeper",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "setPaused", values: [boolean]): string;
+  encodeFunctionData(
     functionFragment: "totalDeposited",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalProtocolFeesAccrued",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -106,10 +133,13 @@ export interface WeaveVaultInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "totalYieldGenerated",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "userShares",
     values: [AddressLike]
@@ -130,6 +160,10 @@ export interface WeaveVaultInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "feeRecipient",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getPricePerShare",
     data: BytesLike
   ): Result;
@@ -137,18 +171,34 @@ export interface WeaveVaultInterface extends Interface {
     functionFragment: "getUserValue",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVaultStats",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "harvest", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "keeper", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "protocolFee",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setFeeRecipient",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setKeeper", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setPaused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalDeposited",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalProtocolFeesAccrued",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -156,10 +206,13 @@ export interface WeaveVaultInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "totalYieldGenerated",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "userShares", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
@@ -182,12 +235,41 @@ export namespace DepositedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace HarvestedEvent {
-  export type InputTuple = [yieldAmount: BigNumberish, timestamp: BigNumberish];
-  export type OutputTuple = [yieldAmount: bigint, timestamp: bigint];
+export namespace FeeRecipientUpdatedEvent {
+  export type InputTuple = [recipient: AddressLike];
+  export type OutputTuple = [recipient: string];
   export interface OutputObject {
-    yieldAmount: bigint;
+    recipient: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HarvestedEvent {
+  export type InputTuple = [
+    netYield: BigNumberish,
+    fee: BigNumberish,
+    timestamp: BigNumberish
+  ];
+  export type OutputTuple = [netYield: bigint, fee: bigint, timestamp: bigint];
+  export interface OutputObject {
+    netYield: bigint;
+    fee: bigint;
     timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace KeeperUpdatedEvent {
+  export type InputTuple = [keeper: AddressLike];
+  export type OutputTuple = [keeper: string];
+  export interface OutputObject {
+    keeper: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -305,9 +387,25 @@ export interface WeaveVault extends BaseContract {
 
   depositToken: TypedContractMethod<[], [string], "view">;
 
+  feeRecipient: TypedContractMethod<[], [string], "view">;
+
   getPricePerShare: TypedContractMethod<[], [bigint], "view">;
 
   getUserValue: TypedContractMethod<[user: AddressLike], [bigint], "view">;
+
+  getVaultStats: TypedContractMethod<
+    [],
+    [
+      [bigint, bigint, bigint, bigint, bigint] & {
+        _totalDeposited: bigint;
+        _totalShares: bigint;
+        _totalYieldGenerated: bigint;
+        _totalProtocolFeesAccrued: bigint;
+        _pricePerShare: bigint;
+      }
+    ],
+    "view"
+  >;
 
   harvest: TypedContractMethod<
     [yieldAmount: BigNumberish],
@@ -319,25 +417,35 @@ export interface WeaveVault extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
-  pause: TypedContractMethod<[], [void], "nonpayable">;
-
   paused: TypedContractMethod<[], [boolean], "view">;
+
+  protocolFee: TypedContractMethod<[], [bigint], "view">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
+  setFeeRecipient: TypedContractMethod<
+    [_recipient: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   setKeeper: TypedContractMethod<[_keeper: AddressLike], [void], "nonpayable">;
+
+  setPaused: TypedContractMethod<[_paused: boolean], [void], "nonpayable">;
 
   totalDeposited: TypedContractMethod<[], [bigint], "view">;
 
+  totalProtocolFeesAccrued: TypedContractMethod<[], [bigint], "view">;
+
   totalShares: TypedContractMethod<[], [bigint], "view">;
+
+  totalYieldGenerated: TypedContractMethod<[], [bigint], "view">;
 
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
     "nonpayable"
   >;
-
-  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   userShares: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
 
@@ -368,11 +476,29 @@ export interface WeaveVault extends BaseContract {
     nameOrSignature: "depositToken"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "feeRecipient"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "getPricePerShare"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getUserValue"
   ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getVaultStats"
+  ): TypedContractMethod<
+    [],
+    [
+      [bigint, bigint, bigint, bigint, bigint] & {
+        _totalDeposited: bigint;
+        _totalShares: bigint;
+        _totalYieldGenerated: bigint;
+        _totalProtocolFeesAccrued: bigint;
+        _pricePerShare: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "harvest"
   ): TypedContractMethod<[yieldAmount: BigNumberish], [void], "nonpayable">;
@@ -383,29 +509,38 @@ export interface WeaveVault extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "pause"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "paused"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "protocolFee"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setFeeRecipient"
+  ): TypedContractMethod<[_recipient: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "setKeeper"
   ): TypedContractMethod<[_keeper: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setPaused"
+  ): TypedContractMethod<[_paused: boolean], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "totalDeposited"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "totalProtocolFeesAccrued"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "totalShares"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "totalYieldGenerated"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "unpause"
-  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "userShares"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
@@ -421,11 +556,25 @@ export interface WeaveVault extends BaseContract {
     DepositedEvent.OutputObject
   >;
   getEvent(
+    key: "FeeRecipientUpdated"
+  ): TypedContractEvent<
+    FeeRecipientUpdatedEvent.InputTuple,
+    FeeRecipientUpdatedEvent.OutputTuple,
+    FeeRecipientUpdatedEvent.OutputObject
+  >;
+  getEvent(
     key: "Harvested"
   ): TypedContractEvent<
     HarvestedEvent.InputTuple,
     HarvestedEvent.OutputTuple,
     HarvestedEvent.OutputObject
+  >;
+  getEvent(
+    key: "KeeperUpdated"
+  ): TypedContractEvent<
+    KeeperUpdatedEvent.InputTuple,
+    KeeperUpdatedEvent.OutputTuple,
+    KeeperUpdatedEvent.OutputObject
   >;
   getEvent(
     key: "OwnershipTransferred"
@@ -468,7 +617,18 @@ export interface WeaveVault extends BaseContract {
       DepositedEvent.OutputObject
     >;
 
-    "Harvested(uint256,uint256)": TypedContractEvent<
+    "FeeRecipientUpdated(address)": TypedContractEvent<
+      FeeRecipientUpdatedEvent.InputTuple,
+      FeeRecipientUpdatedEvent.OutputTuple,
+      FeeRecipientUpdatedEvent.OutputObject
+    >;
+    FeeRecipientUpdated: TypedContractEvent<
+      FeeRecipientUpdatedEvent.InputTuple,
+      FeeRecipientUpdatedEvent.OutputTuple,
+      FeeRecipientUpdatedEvent.OutputObject
+    >;
+
+    "Harvested(uint256,uint256,uint256)": TypedContractEvent<
       HarvestedEvent.InputTuple,
       HarvestedEvent.OutputTuple,
       HarvestedEvent.OutputObject
@@ -477,6 +637,17 @@ export interface WeaveVault extends BaseContract {
       HarvestedEvent.InputTuple,
       HarvestedEvent.OutputTuple,
       HarvestedEvent.OutputObject
+    >;
+
+    "KeeperUpdated(address)": TypedContractEvent<
+      KeeperUpdatedEvent.InputTuple,
+      KeeperUpdatedEvent.OutputTuple,
+      KeeperUpdatedEvent.OutputObject
+    >;
+    KeeperUpdated: TypedContractEvent<
+      KeeperUpdatedEvent.InputTuple,
+      KeeperUpdatedEvent.OutputTuple,
+      KeeperUpdatedEvent.OutputObject
     >;
 
     "OwnershipTransferred(address,address)": TypedContractEvent<

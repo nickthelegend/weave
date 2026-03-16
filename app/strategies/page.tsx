@@ -6,42 +6,33 @@ import {
   BarChart3, 
   ShieldCheck, 
   Zap, 
-  Info,
   ChevronRight,
-  TrendingUp,
-  Activity
+  Activity,
+  RefreshCcw
 } from "lucide-react"
-
-const strategies = [
-  {
-    name: "Initia DEX LP",
-    pair: "USDC-INIT",
-    apy: "169.4%",
-    tvl: "$14.2M",
-    allocation: "65%",
-    risk: "Medium",
-    riskColor: "text-yellow-500",
-    fees: "12.4%",
-    emissions: "157.0%",
-    status: "Optimizing"
-  },
-  {
-    name: "Echelon Lending",
-    pair: "INIT Supply",
-    apy: "14.2%",
-    tvl: "$28.5M",
-    allocation: "35%",
-    risk: "Low",
-    riskColor: "text-[#0B7B5E]",
-    fees: "8.1%",
-    emissions: "6.1%",
-    status: "Stable"
-  }
-]
+import { usePoolData } from "@/app/hooks/usePoolData"
+import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function StrategiesPage() {
+  const { pools, loading, lastUpdated, error } = usePoolData();
+
+  if (loading) {
+    return (
+        <div className="max-w-7xl mx-auto px-6 py-20 space-y-12 animate-pulse">
+            <div className="h-12 w-64 bg-white/5 rounded-sm" />
+            <div className="space-y-6">
+                {[1, 2].map(i => (
+                    <div key={i} className="h-48 w-full bg-white/5 rounded-sm border border-white/5" />
+                ))}
+            </div>
+        </div>
+    );
+  }
+
+  const totalTVL = pools.reduce((acc, p) => acc + p.tvl, 0);
+
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 font-sans">
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
@@ -53,22 +44,25 @@ export default function StrategiesPage() {
             <div className="terminal-card bg-black px-6 py-4 flex items-center gap-4">
                 <BarChart3 className="text-primary" size={20} />
                 <div>
-                    <p className="text-[9px] font-black text-white/20 uppercase">Total TVL</p>
-                    <p className="text-xl font-mono font-black italic text-white">$42,701,920</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-[9px] font-black text-white/20 uppercase">Total TVL</p>
+                        <LiveBadge type={error ? 'cached' : 'live'} />
+                    </div>
+                    <p className="text-xl font-mono font-black italic text-white">${totalTVL.toLocaleString()}</p>
                 </div>
             </div>
-            <div className="terminal-card bg-black px-6 py-4 flex items-center gap-4 border-dashed opacity-50">
+            <div className="terminal-card bg-black px-6 py-4 flex items-center gap-4 border-dashed">
                 <Activity className="text-white/20" size={20} />
                 <div>
-                    <p className="text-[9px] font-black text-white/20 uppercase">Last Harvest</p>
-                    <p className="text-lg font-mono font-bold text-white/40 italic">14m ago</p>
+                    <p className="text-[9px] font-black text-white/20 uppercase">Last Update</p>
+                    <p className="text-lg font-mono font-bold text-white/40 italic">{lastUpdated.toLocaleTimeString()}</p>
                 </div>
             </div>
         </div>
       </div>
 
       <div className="space-y-8">
-        {strategies.map((strategy, i) => (
+        {pools.map((strategy, i) => (
           <motion.div 
             key={i}
             initial={{ opacity: 0, x: -20 }}
@@ -82,11 +76,11 @@ export default function StrategiesPage() {
                 <div className="lg:col-span-4 p-8 bg-[#050505] border-r border-white/5 space-y-6">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                            {i === 0 ? <Zap size={24} /> : <Layers size={24} />}
+                            {strategy.type === 'dex' ? <Zap size={24} /> : <Layers size={24} />}
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tight leading-none">{strategy.name}</h3>
-                            <p className="text-[10px] font-bold text-white/40 uppercase mt-1 tracking-widest">{strategy.pair}</p>
+                            <h3 className="text-2xl font-black italic uppercase tracking-tight leading-none">{strategy.pair}</h3>
+                            <p className="text-[10px] font-bold text-white/40 uppercase mt-1 tracking-widest">{strategy.type === 'dex' ? 'LP Provision' : 'Lending Supply'}</p>
                         </div>
                     </div>
 
@@ -94,13 +88,13 @@ export default function StrategiesPage() {
                         <div className="space-y-1">
                             <p className="text-[9px] font-black text-white/20 uppercase italic tracking-widest">Protocol Risk</p>
                             <div className="flex items-center gap-2">
-                                <ShieldCheck size={12} className={strategy.riskColor} />
-                                <span className={`text-xs font-black uppercase italic ${strategy.riskColor}`}>{strategy.risk}</span>
+                                <ShieldCheck size={12} className={strategy.type === 'dex' ? "text-yellow-500" : "text-[#0B7B5E]"} />
+                                <span className={`text-xs font-black uppercase italic ${strategy.type === 'dex' ? "text-yellow-500" : "text-[#0B7B5E]"}`}>{strategy.type === 'dex' ? 'Medium' : 'Low'}</span>
                             </div>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[9px] font-black text-white/20 uppercase italic tracking-widest">Status</p>
-                            <span className="text-xs font-black uppercase italic text-primary">{strategy.status}</span>
+                            <span className="text-xs font-black uppercase italic text-primary">Optimizing</span>
                         </div>
                     </div>
                 </div>
@@ -109,24 +103,22 @@ export default function StrategiesPage() {
                 <div className="lg:col-span-6 p-8 grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
                     <div className="space-y-1">
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Current APY</p>
-                        <p className="text-3xl font-mono font-black italic text-primary tracking-tighter">{strategy.apy}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Total Value</p>
-                        <p className="text-xl font-mono font-bold text-white tracking-tighter">{strategy.tvl}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Allocation</p>
                         <div className="flex items-center gap-2">
-                            <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary" style={{ width: strategy.allocation }} />
-                            </div>
-                            <span className="text-xs font-mono font-bold text-white/60">{strategy.allocation}</span>
+                            <p className="text-3xl font-mono font-black italic text-primary tracking-tighter">{strategy.totalAPR.toFixed(1)}%</p>
+                            <LiveBadge type="est" />
                         </div>
                     </div>
                     <div className="space-y-1">
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">TVL</p>
+                        <p className="text-xl font-mono font-bold text-white tracking-tighter">${(strategy.tvl / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">24h Vol</p>
+                        <p className="text-xs font-mono font-bold text-white/60">${strategy.volume24h > 0 ? (strategy.volume24h / 1000).toFixed(0) + 'K' : 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Fees/Emiss</p>
-                        <p className="text-xs font-mono font-bold text-[#0B7B5E]">{strategy.fees} <span className="text-white/20">/</span> <span className="text-primary">{strategy.emissions}</span></p>
+                        <p className="text-xs font-mono font-bold text-[#0B7B5E]">{strategy.feeAPR.toFixed(1)}% <span className="text-white/20">/</span> <span className="text-primary">{strategy.emissionAPR.toFixed(1)}%</span></p>
                     </div>
                 </div>
 
@@ -141,16 +133,6 @@ export default function StrategiesPage() {
             </div>
           </motion.div>
         ))}
-      </div>
-
-      {/* Footer Info */}
-      <div className="terminal-card bg-[#050505] p-6 border-dashed opacity-40">
-        <div className="flex items-start gap-4">
-            <Info className="text-primary flex-shrink-0" size={16} />
-            <p className="text-[9px] font-medium text-white/40 leading-relaxed uppercase tracking-widest">
-                All strategies are non-custodial and governed by the Weave Yield Engine. Capital is distributed based on real-time APY monitoring and liquidity depth. Historical performance is not indicative of future results. Max drawdown for DEX LP strategies capped at IL exposure.
-            </p>
-        </div>
       </div>
 
     </div>

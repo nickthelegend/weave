@@ -1,24 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { 
   ArrowDownCircle, 
-  Wallet, 
   ChevronDown, 
   Zap, 
   Lock, 
   TrendingUp,
-  History
+  History,
+  Wallet
 } from "lucide-react"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
+import { usePoolData } from "@/app/hooks/usePoolData"
+import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function AppPage() {
   const [amount, setAmount] = useState("")
   const [token, setToken] = useState("INIT")
   const { isConnected, connect, balances, isFetching } = useWeaveWallet();
+  const { weightedPool, error: poolError } = usePoolData();
 
   const currentBalance = token === "INIT" ? balances.init : balances.usdc;
+  const apr = weightedPool?.totalAPR || 169.4;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
@@ -35,7 +39,7 @@ export default function AppPage() {
                     {isConnected && (
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40">
                           Balance: <span className={isFetching ? "animate-pulse" : ""}>{currentBalance} {token}</span>
-                          <button onClick={() => setAmount(currentBalance)} className="text-primary hover:underline">MAX</button>
+                          <button onClick={() => setAmount(currentBalance)} className="text-primary hover:underline ml-1">MAX</button>
                       </div>
                     )}
                 </div>
@@ -80,12 +84,15 @@ export default function AppPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-secondary p-4 border border-white/5 rounded space-y-1">
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Projected APY</p>
-                        <p className="text-2xl font-mono font-black italic text-primary">169.4%</p>
+                        <div className="flex items-center justify-between">
+                            <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Projected APY</p>
+                            <LiveBadge type={poolError ? 'cached' : 'est'} />
+                        </div>
+                        <p className="text-2xl font-mono font-black italic text-primary tabular-nums">{apr.toFixed(1)}%</p>
                     </div>
                     <div className="bg-secondary p-4 border border-white/5 rounded space-y-1">
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Monthly Earn</p>
-                        <p className="text-2xl font-mono font-black italic text-white">${(parseFloat(amount || "0") * 0.14).toFixed(2)}</p>
+                        <p className="text-2xl font-mono font-black italic text-white tabular-nums">${(parseFloat(amount || "0") * (apr/1200)).toFixed(2)}</p>
                     </div>
                 </div>
 
@@ -102,11 +109,11 @@ export default function AppPage() {
                 <div className="pt-4 border-t border-white/5 space-y-3">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Fees APR</span>
-                        <span className="text-[#0B7B5E]">12.4%</span>
+                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool?.feeAPR.toFixed(1) || "12.4"}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Incentives APR</span>
-                        <span className="text-primary">157.0%</span>
+                        <span className="text-primary tabular-nums">{weightedPool?.emissionAPR.toFixed(1) || "157.0"}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Vesting Period</span>

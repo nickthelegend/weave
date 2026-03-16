@@ -1,19 +1,22 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Zap, TrendingUp, ShieldCheck, ArrowRight, ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { usePoolData } from "@/app/hooks/usePoolData"
 
 export default function LandingPage() {
+  const { weightedPool } = usePoolData();
+  const apr = weightedPool?.totalAPR || 169.4;
   const [counter, setCounter] = useState(1000)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCounter(prev => prev + (prev * (1.69 / (365 * 24 * 60 * 20)))) // Simulating growth
+      setCounter(prev => prev + (prev * (apr / (100 * 365 * 24 * 60 * 20)))) // Real-time APR-based growth
     }, 50)
     return () => clearInterval(interval)
-  }, [])
+  }, [apr])
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-20 space-y-32">
@@ -75,7 +78,7 @@ export default function LandingPage() {
             <h3 className="text-sm font-black uppercase tracking-[0.4em] text-primary italic">Live Yield Engine</h3>
             <p className="text-2xl font-bold uppercase leading-tight">
               Watch your capital work at <br />
-              <span className="text-primary">169% Target APY</span>
+              <span className="text-primary">{apr.toFixed(1)}% Target APY</span>
             </p>
             <p className="text-xs font-medium text-white/40 uppercase tracking-tighter">
               Historical performance based on USDC-INIT LP auto-compounding emissions.
@@ -89,7 +92,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center justify-center md:justify-end gap-2 mt-4">
                     <TrendingUp size={16} className="text-primary" />
-                    <span className="text-xs font-bold text-primary italic uppercase tracking-widest">+169.42% APR</span>
+                    <span className="text-xs font-bold text-primary italic uppercase tracking-widest">+{apr.toFixed(2)}% APR</span>
                 </div>
             </div>
           </div>

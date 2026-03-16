@@ -1,6 +1,10 @@
 import { ethers } from "hardhat";
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -8,13 +12,13 @@ async function main() {
 
   // 1. Deploy MockUSDC
   const MockERC20 = await ethers.getContractFactory("MockERC20");
-  const mockUSDC = await MockERC20.deploy("Mock USDC", "USDC", 6);
+  const mockUSDC = await MockERC20.deploy("Mock USDC", "mUSDC", 6);
   await mockUSDC.waitForDeployment();
   const mockUSDCAddress = await mockUSDC.getAddress();
   console.log("MockUSDC deployed to:", mockUSDCAddress);
 
   // 2. Deploy MockINIT
-  const mockINIT = await MockERC20.deploy("Mock INIT", "INIT", 6);
+  const mockINIT = await MockERC20.deploy("Mock INIT", "mINIT", 6);
   await mockINIT.waitForDeployment();
   const mockINITAddress = await mockINIT.getAddress();
   console.log("MockINIT deployed to:", mockINITAddress);
@@ -28,17 +32,20 @@ async function main() {
 
   // 4. Deploy WeaveZapIn
   const WeaveZapIn = await ethers.getContractFactory("WeaveZapIn");
-  const weaveZapIn = await WeaveZapIn.deploy(weaveVaultAddress, mockUSDCAddress);
+  const weaveZapIn = await WeaveZapIn.deploy();
   await weaveZapIn.waitForDeployment();
   const weaveZapInAddress = await weaveZapIn.getAddress();
   console.log("WeaveZapIn deployed to:", weaveZapInAddress);
 
-  // 5. Mint 100,000 USDC to deployer for testing
-  const mintAmount = ethers.parseUnits("100000", 6);
-  await mockUSDC.mint(deployer.address, mintAmount);
-  console.log("Minted 100,000 USDC to deployer");
+  // 5. Setup Keeper
+  await weaveVault.setKeeper(deployer.address);
+  console.log("Keeper set to:", deployer.address);
 
-  // 6. Save addresses
+  // 6. Mint 1,000,000 USDC to deployer
+  await mockUSDC.mint(deployer.address, ethers.parseUnits("1000000", 6));
+  console.log("Minted 1,000,000 mUSDC to deployer");
+
+  // 7. Save addresses
   const deploymentsDir = path.join(__dirname, "../deployments");
   if (!fs.existsSync(deploymentsDir)) {
     fs.mkdirSync(deploymentsDir);
@@ -46,11 +53,14 @@ async function main() {
 
   const deploymentData = {
     network: "initiaTestnet",
-    weaveVault: weaveVaultAddress,
-    weaveZapIn: weaveZapInAddress,
-    mockUSDC: mockUSDCAddress,
-    mockINIT: mockINITAddress,
-    deployedAt: new Date().toISOString()
+    deployedAt: new Date().toISOString(),
+    contracts: {
+      weaveVault: weaveVaultAddress,
+      weaveZapIn: weaveZapInAddress,
+      mockUSDC: mockUSDCAddress,
+      mockINIT: mockINITAddress
+    },
+    weaveToken: "NOT_DEPLOYED — planned v2"
   };
 
   fs.writeFileSync(

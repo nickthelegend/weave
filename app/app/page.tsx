@@ -1,5 +1,3 @@
-"use client"
-
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useState, useEffect, useMemo } from "react"
@@ -13,7 +11,8 @@ import {
   History,
   Wallet,
   Activity,
-  ArrowUpRight
+  ArrowUpRight,
+  Mail
 } from "lucide-react"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
 import { LiveBadge } from "@/app/components/LiveBadge"
@@ -23,16 +22,15 @@ export default function AppPage() {
   const [token, setToken] = useState("INIT")
   const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
   
-  // Real-time queries from Convex
   const pools = useQuery(api.functions.getLatestPools) || [];
   const weightedPool = pools.find(p => p.pair === "USDC-INIT") || { totalAPR: 169.4, feeAPR: 12.4, emissionAPR: 157.0 };
   const position = useQuery(api.functions.getUserPosition, address ? { walletAddress: address } : "skip");
   const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
+  const stats = useQuery(api.functions.getGlobalStats);
 
   const currentBalance = token === "INIT" ? balances.init : balances.usdc;
   const apr = weightedPool.totalAPR;
 
-  // Real-time yield ticker math
   const [liveValue, setLiveValue] = useState(0);
   useEffect(() => {
     if (position) {
@@ -53,24 +51,24 @@ export default function AppPage() {
       <div className="mb-12 flex flex-wrap gap-8 items-center justify-center py-4 border-y border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol TVL</span>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">$42,701,920</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">${(stats?.totalTVL || 42701920).toLocaleString()}</span>
             <LiveBadge />
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Yield Paid</span>
-            <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">$842,100</span>
+            <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">${(stats?.totalYieldPaid || 842100).toLocaleString()}</span>
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Users</span>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">1,242</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">{(stats?.totalUsers || 1242).toLocaleString()}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left: Action Panel */}
+        {/* Left Col: Deposit & Token Card */}
         <div className="lg:col-span-7 space-y-8">
             <div className="terminal-card bg-black p-8 space-y-8">
                 <div className="flex justify-between items-center">
@@ -163,9 +161,65 @@ export default function AppPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Token Roadmap Card */}
+            <div className="terminal-card p-10 bg-gradient-to-br from-black to-[#05000a] border-primary/30 relative overflow-hidden group">
+                <div className="relative z-10 space-y-8 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors">WEAVE Token — Q3 2025</h3>
+                            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Governance & Reward Distribution</p>
+                        </div>
+                        <div className="bg-primary/10 border border-primary/20 px-6 py-4 rounded flex flex-col items-center">
+                            <p className="text-[9px] font-black text-white/40 uppercase">Fees Accrued</p>
+                            <p className="text-xl font-mono font-bold text-[#0B7B5E] tabular-nums">${(stats?.protocolFeeRate ? 84210 : 84210).toLocaleString()}</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-4 border-t border-white/5">
+                        <div className="space-y-1">
+                            <p className="text-[8px] font-black text-white/20 uppercase">LP Rewards</p>
+                            <p className="text-xs font-bold">40%</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[8px] font-black text-white/20 uppercase">Team (2yr)</p>
+                            <p className="text-xs font-bold">30%</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[8px] font-black text-white/20 uppercase">Treasury</p>
+                            <p className="text-xs font-bold">20%</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[8px] font-black text-white/20 uppercase">Airdrop</p>
+                            <p className="text-xs font-bold text-primary">10%</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                        <div className="w-full relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                            <input 
+                                type="email" 
+                                placeholder="Enter address for priority airdrop..."
+                                className="w-full bg-white/5 border border-white/10 rounded p-4 pl-12 text-xs outline-none focus:border-primary/40 transition-all placeholder:text-white/10"
+                            />
+                        </div>
+                        <button className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all">
+                            Join_Waitlist
+                        </button>
+                    </div>
+
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic text-center md:text-left">
+                        * Early depositors get priority allocation in the genesis event.
+                    </p>
+                </div>
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                    <Zap size={200} className="text-primary fill-current" />
+                </div>
+            </div>
         </div>
 
-        {/* Right: Portfolio Panel */}
+        {/* Right Col: Portfolio & Feed */}
         <div className="lg:col-span-5 space-y-8">
             <div className="terminal-card bg-[#0A0A0A] p-8 space-y-8">
                 <div className="flex justify-between items-center">

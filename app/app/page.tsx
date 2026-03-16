@@ -1,3 +1,5 @@
+"use client"
+
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useState, useEffect, useMemo } from "react"
@@ -12,37 +14,40 @@ import {
   Wallet,
   Activity,
   ArrowUpRight,
-  Mail
+  Mail,
+  RefreshCcw
 } from "lucide-react"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
+import { usePoolData } from "@/app/hooks/usePoolData"
+import { useVault } from "@/app/hooks/useVault"
 import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function AppPage() {
   const [amount, setAmount] = useState("")
   const [token, setToken] = useState("INIT")
+  const [useZap, setUseZap] = useState(true)
+  const [withdrawShares, setWithdrawShares] = useState("")
+
   const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
+  const { weightedPool, error: poolError } = usePoolData();
+  const { deposit, withdraw, position, stats, loading: vaultLoading } = useVault(address || undefined);
   
-  const pools = useQuery(api.functions.getLatestPools) || [];
-  const weightedPool = pools.find(p => p.pair === "USDC-INIT") || { totalAPR: 169.4, feeAPR: 12.4, emissionAPR: 157.0 };
-  const position = useQuery(api.functions.getUserPosition, address ? { walletAddress: address } : "skip");
   const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
-  const stats = useQuery(api.functions.getGlobalStats);
 
   const currentBalance = token === "INIT" ? balances.init : balances.usdc;
-  const apr = weightedPool.totalAPR;
+  const apr = weightedPool?.totalAPR || 169.4;
 
-  const [liveValue, setLiveValue] = useState(0);
-  useEffect(() => {
-    if (position) {
-        const interval = setInterval(() => {
-            const now = Date.now();
-            const elapsedYears = (now - position.lastUpdateAt) / (1000 * 60 * 60 * 24 * 365.25);
-            const yieldFactor = Math.pow(1 + (apr / 100), elapsedYears);
-            setLiveValue(position.currentValue * yieldFactor);
-        }, 50);
-        return () => clearInterval(interval);
-    }
-  }, [position, apr]);
+  const handleDeposit = async () => {
+    if (!amount || parseFloat(amount) <= 0) return;
+    await deposit(amount, useZap);
+    setAmount("");
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawShares || parseFloat(withdrawShares) <= 0) return;
+    await withdraw(withdrawShares);
+    setWithdrawShares("");
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
@@ -51,18 +56,18 @@ export default function AppPage() {
       <div className="mb-12 flex flex-wrap gap-8 items-center justify-center py-4 border-y border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol TVL</span>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">${(stats?.totalTVL || 42701920).toLocaleString()}</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">${parseFloat(stats.totalDeposited).toLocaleString()}</span>
             <LiveBadge />
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Yield Paid</span>
-            <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">${(stats?.totalYieldPaid || 842100).toLocaleString()}</span>
+            <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">${parseFloat(stats.totalYieldGenerated).toLocaleString()}</span>
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Users</span>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">{(stats?.totalUsers || 1242).toLocaleString()}</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">1,242</span>
         </div>
       </div>
 
@@ -108,16 +113,22 @@ export default function AppPage() {
                         </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded group cursor-pointer hover:bg-primary/10 transition-colors">
+                    <div 
+                        onClick={() => setUseZap(!useZap)}
+                        className={`flex items-center justify-between p-4 border rounded group cursor-pointer transition-colors ${useZap ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-white/5'}`}
+                    >
                         <div className="flex items-center gap-3">
-                            <Zap size={18} className="text-primary fill-current" />
+                            <Zap size={18} className={useZap ? "text-primary fill-current" : "text-white/20"} />
                             <div>
-                                <p className="text-[10px] font-black uppercase italic text-primary tracking-widest">Zap Mode Active</p>
-                                <p className="text-[9px] font-bold text-white/40 uppercase">We handle LP conversion for you</p>
+                                <p className={`text-[10px] font-black uppercase italic tracking-widest ${useZap ? 'text-primary' : 'text-white/40'}`}>Zap Mode {useZap ? 'Active' : 'Disabled'}</p>
+                                <p className="text-[9px] font-bold text-white/40 uppercase">Automatic LP Formation via single token</p>
                             </div>
                         </div>
-                        <div className="w-10 h-5 bg-primary/20 rounded-full relative p-1">
-                            <div className="w-3 h-3 bg-primary rounded-full absolute right-1" />
+                        <div className={`w-10 h-5 rounded-full relative p-1 transition-colors ${useZap ? 'bg-primary/20' : 'bg-white/10'}`}>
+                            <motion.div 
+                                animate={{ x: useZap ? 20 : 0 }}
+                                className={`w-3 h-3 rounded-full ${useZap ? 'bg-primary' : 'bg-white/20'}`} 
+                            />
                         </div>
                     </div>
                 </div>
@@ -126,7 +137,7 @@ export default function AppPage() {
                     <div className="bg-secondary p-4 border border-white/5 rounded space-y-1">
                         <div className="flex items-center justify-between">
                             <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Projected APY</p>
-                            <LiveBadge type="est" />
+                            <LiveBadge type={poolError ? 'cached' : 'est'} />
                         </div>
                         <p className="text-2xl font-mono font-black italic text-primary tabular-nums">{apr.toFixed(1)}%</p>
                     </div>
@@ -137,8 +148,12 @@ export default function AppPage() {
                 </div>
 
                 {isConnected ? (
-                  <button className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
-                      Execute Deposit_
+                  <button 
+                    onClick={handleDeposit}
+                    disabled={vaultLoading || !amount}
+                    className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                  >
+                      {vaultLoading ? 'Processing TX...' : 'Execute Deposit_'}
                   </button>
                 ) : (
                   <button onClick={() => connect()} className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
@@ -149,15 +164,15 @@ export default function AppPage() {
                 <div className="pt-4 border-t border-white/5 space-y-3">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Fees APR</span>
-                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool.feeAPR.toFixed(1)}%</span>
+                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool?.feeAPR.toFixed(1) || "12.4"}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Incentives APR</span>
-                        <span className="text-primary tabular-nums">{weightedPool.emissionAPR.toFixed(1)}%</span>
+                        <span className="text-primary tabular-nums">{weightedPool?.emissionAPR.toFixed(1) || "157.0"}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span className="text-white/40">Vesting Period</span>
-                        <span className="text-white">Liquid</span>
+                        <span className="text-white/40">Price Per Share</span>
+                        <span className="text-white tabular-nums">${parseFloat(stats.pricePerShare).toFixed(4)}</span>
                     </div>
                 </div>
             </div>
@@ -172,7 +187,7 @@ export default function AppPage() {
                         </div>
                         <div className="bg-primary/10 border border-primary/20 px-6 py-4 rounded flex flex-col items-center">
                             <p className="text-[9px] font-black text-white/40 uppercase">Fees Accrued</p>
-                            <p className="text-xl font-mono font-bold text-[#0B7B5E] tabular-nums">${(stats?.protocolFeeRate ? 84210 : 84210).toLocaleString()}</p>
+                            <p className="text-xl font-mono font-bold text-[#0B7B5E] tabular-nums">${parseFloat(stats.totalProtocolFeesAccrued).toLocaleString()}</p>
                         </div>
                     </div>
 
@@ -237,7 +252,7 @@ export default function AppPage() {
                     </div>
                     <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Connect wallet to view portfolio</p>
                   </div>
-                ) : !position ? (
+                ) : parseFloat(position.shares) === 0 ? (
                   <div className="py-12 text-center space-y-4">
                     <Activity className="mx-auto text-white/10" size={32} />
                     <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">No active position detected</p>
@@ -245,38 +260,44 @@ export default function AppPage() {
                 ) : (
                   <>
                     <div className="space-y-2">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Real-time Balance</p>
+                        <div className="flex justify-between items-center">
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Value</p>
+                            <LiveBadge />
+                        </div>
                         <div className="text-5xl font-mono font-black italic text-white tracking-tighter tabular-nums">
-                            ${liveValue.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                            ${parseFloat(position.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
                             <TrendingUp size={12} />
-                            + ${(liveValue - position.principalAmount).toFixed(4)} Yield Earned
+                            ${position.shares} Shares @ ${parseFloat(position.pricePerShare).toFixed(4)}
                         </div>
                     </div>
 
                     <div className="space-y-6 pt-6 border-t border-white/5">
                         <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-1 h-8 bg-primary rounded-full" />
-                                <div className="flex-grow">
-                                    <div className="flex justify-between items-end">
-                                        <p className="text-[10px] font-black uppercase text-white/40 italic">Liquid Position</p>
-                                        <p className="text-sm font-bold">${position.principalAmount.toLocaleString()}</p>
-                                    </div>
-                                    <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
-                                        <div className="w-[100%] h-full bg-primary" />
-                                    </div>
+                            <div className="bg-secondary/5 border border-white/5 p-4 rounded space-y-2">
+                                <p className="text-[9px] font-black text-white/20 uppercase">Withdraw Shares</p>
+                                <input 
+                                    type="number"
+                                    value={withdrawShares}
+                                    onChange={(e) => setWithdrawShares(e.target.value)}
+                                    placeholder="0.00"
+                                    className="bg-transparent border-none outline-none text-2xl font-mono font-bold w-full text-white placeholder:text-white/10"
+                                />
+                                <div className="flex justify-between text-[8px] font-bold text-white/30 uppercase">
+                                    <span>You Receive: ~${(parseFloat(withdrawShares || "0") * parseFloat(position.pricePerShare)).toFixed(2)} USDC</span>
+                                    <button onClick={() => setWithdrawShares(position.shares)} className="text-primary hover:underline">ALL</button>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex gap-4">
-                            <button className="flex-grow border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-white/5 transition-all">
-                                Withdraw
-                            </button>
-                            <button className="flex-grow border border-primary/20 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest text-primary hover:bg-primary/5 transition-all">
-                                Claim
+                            <button 
+                                onClick={handleWithdraw}
+                                disabled={vaultLoading || !withdrawShares}
+                                className="flex-grow bg-white text-black py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                            >
+                                {vaultLoading ? 'Processing...' : 'Withdraw_'}
                             </button>
                         </div>
                     </div>
@@ -300,6 +321,7 @@ export default function AppPage() {
                         </div>
                     )) : (
                         <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <History size={24} className="mb-2 text-white/5" />
                             <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Scanning blockchain...</span>
                         </div>
                     )}

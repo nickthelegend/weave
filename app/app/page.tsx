@@ -6,20 +6,22 @@ import {
   ArrowDownCircle, 
   Wallet, 
   ChevronDown, 
-  Info, 
   Zap, 
   Lock, 
-  ArrowUpRight,
   TrendingUp,
   History
 } from "lucide-react"
+import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
 
 export default function AppPage() {
   const [amount, setAmount] = useState("")
   const [token, setToken] = useState("INIT")
+  const { isConnected, connect, balances, isFetching } = useWeaveWallet();
+
+  const currentBalance = token === "INIT" ? balances.init : balances.usdc;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left: Action Panel */}
@@ -30,10 +32,12 @@ export default function AppPage() {
                         <ArrowDownCircle className="text-primary" />
                         Deposit Capital
                     </h2>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40">
-                        Balance: 1,420.69 INIT
-                        <button className="text-primary hover:underline">MAX</button>
-                    </div>
+                    {isConnected && (
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40">
+                          Balance: <span className={isFetching ? "animate-pulse" : ""}>{currentBalance} {token}</span>
+                          <button onClick={() => setAmount(currentBalance)} className="text-primary hover:underline">MAX</button>
+                      </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">
@@ -48,9 +52,12 @@ export default function AppPage() {
                                 className="bg-transparent border-none outline-none text-4xl font-mono font-bold w-full text-white placeholder:text-white/10"
                             />
                         </div>
-                        <button className="bg-secondary p-3 rounded border border-white/10 flex items-center gap-3 hover:border-primary/40 transition-all">
+                        <button 
+                          onClick={() => setToken(token === "INIT" ? "USDC" : "INIT")}
+                          className="bg-secondary p-3 rounded border border-white/10 flex items-center gap-3 hover:border-primary/40 transition-all"
+                        >
                             <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs italic">
-                                {token === "INIT" ? "I" : "U"}
+                                {token[0]}
                             </div>
                             <span className="font-bold">{token}</span>
                             <ChevronDown size={16} className="text-white/40" />
@@ -82,9 +89,15 @@ export default function AppPage() {
                     </div>
                 </div>
 
-                <button className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
-                    Execute Deposit_
-                </button>
+                {isConnected ? (
+                  <button className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+                      Execute Deposit_
+                  </button>
+                ) : (
+                  <button onClick={() => connect()} className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
+                      <Wallet size={18} /> Connect Wallet to Deposit
+                  </button>
+                )}
 
                 <div className="pt-4 border-t border-white/5 space-y-3">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
@@ -111,79 +124,63 @@ export default function AppPage() {
                         <Lock size={20} className="text-white/40" />
                         My Position
                     </h2>
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_#ad46ff]" />
+                    {isConnected && <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_#ad46ff]" />}
                 </div>
 
-                <div className="space-y-2">
-                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Balance</p>
-                    <div className="text-5xl font-mono font-black italic text-white tracking-tighter">
-                        $12,482.90
+                {!isConnected ? (
+                  <div className="py-12 text-center space-y-4">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/5">
+                      <Wallet size={24} className="text-white/20" />
                     </div>
-                    <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
-                        <TrendingUp size={12} />
-                        + $42.10 since last harvest
+                    <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Connect wallet to view portfolio</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Balance</p>
+                        <div className="text-5xl font-mono font-black italic text-white tracking-tighter">
+                            $0.00
+                        </div>
+                        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">No active position detected</p>
                     </div>
-                </div>
 
-                <div className="space-y-6 pt-6 border-t border-white/5">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-1 h-8 bg-primary rounded-full" />
-                            <div className="flex-grow">
-                                <div className="flex justify-between items-end">
-                                    <p className="text-[10px] font-black uppercase text-white/40 italic">Liquid Position</p>
-                                    <p className="text-sm font-bold">$10,120.00</p>
-                                </div>
-                                <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
-                                    <div className="w-[80%] h-full bg-primary" />
+                    <div className="space-y-6 pt-6 border-t border-white/5 opacity-30 pointer-events-none">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1 h-8 bg-primary rounded-full" />
+                                <div className="flex-grow">
+                                    <div className="flex justify-between items-end">
+                                        <p className="text-[10px] font-black uppercase text-white/40 italic">Liquid Position</p>
+                                        <p className="text-sm font-bold">$0.00</p>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
+                                        <div className="w-[0%] h-full bg-primary" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-1 h-8 bg-white/10 rounded-full" />
-                            <div className="flex-grow">
-                                <div className="flex justify-between items-end">
-                                    <p className="text-[10px] font-black uppercase text-white/40 italic">Vested Rewards</p>
-                                    <p className="text-sm font-bold">$2,362.90</p>
-                                </div>
-                                <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
-                                    <div className="w-[20%] h-full bg-white/20" />
-                                </div>
-                            </div>
+
+                        <div className="flex gap-4">
+                            <button className="flex-grow border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest">
+                                Withdraw
+                            </button>
                         </div>
                     </div>
-
-                    <div className="flex gap-4">
-                        <button className="flex-grow border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-white/5 transition-all">
-                            Withdraw
-                        </button>
-                        <button className="flex-grow border border-primary/20 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest text-primary hover:bg-primary/5 transition-all">
-                            Claim Rewards
-                        </button>
-                    </div>
-                </div>
+                  </>
+                )}
             </div>
 
-            <div className="terminal-card bg-black p-6 space-y-4 border-dashed opacity-60">
-                <div className="flex items-center gap-3 text-white/40">
-                    <History size={16} />
-                    <h3 className="text-[10px] font-black uppercase tracking-widest italic">Live Activity Stream</h3>
-                </div>
-                <div className="space-y-4">
-                    {[
-                        "Deposited 420.00 INIT into DEX strategy",
-                        "Harvested 12.50 VIP rewards",
-                        "Compounded position at 169% APY"
-                    ].map((activity, i) => (
-                        <div key={i} className="flex gap-4 items-start group">
-                            <div className="w-0.5 h-4 bg-white/10 group-hover:bg-primary transition-colors mt-1" />
-                            <p className="text-[10px] font-medium text-white/30 group-hover:text-white/60 transition-colors uppercase">
-                                {activity} <span className="text-[9px] opacity-40 italic block mt-1">2m ago // 0x4a...c21</span>
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            {isConnected && (
+              <div className="terminal-card bg-black p-6 space-y-4 border-dashed opacity-60">
+                  <div className="flex items-center gap-3 text-white/40">
+                      <History size={16} />
+                      <h3 className="text-[10px] font-black uppercase tracking-widest italic">Live Activity Stream</h3>
+                  </div>
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Scanning blockchain...</span>
+                  </div>
+              </div>
+            )}
         </div>
 
       </div>

@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
-import { Providers } from "./providers"
-import { Toaster } from "@/components/ui/sonner"
+import { useTheme } from "next-themes";
+import { Providers } from "./providers";
+import { WalletProvider } from "./providers/WalletProvider";
 
-export default function RootLayout({
+export default function RootLayoutWrapper({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <Providers>
-      {children}
-      <Toaster position="bottom-right" theme="dark" />
+      <WalletProvider>
+        {children}
+      </WalletProvider>
     </Providers>
-  )
+  );
 }

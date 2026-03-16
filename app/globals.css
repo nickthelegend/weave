@@ -50,6 +50,14 @@
   }
 }
 
+/* Custom Wallet Modal Styling */
+.weave-wallet-modal {
+  --interchain-ui-colors-modal-background: #000000 !important;
+  --interchain-ui-colors-modal-border: rgba(173, 70, 255, 0.3) !important;
+  --interchain-ui-colors-text-primary: #ffffff !important;
+  --interchain-ui-colors-primary: #ad46ff !important;
+}
+
 .scanline {
   width: 100%;
   height: 2px;

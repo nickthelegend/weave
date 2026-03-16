@@ -50,4 +50,11 @@ export default defineSchema({
     maxAPR: v.number(),
     totalTVL: v.number(),
   }).index("by_date", ["date"]),
+
+  faucetClaims: defineTable({
+    wallet: v.string(),
+    token: v.string(), // "mUSDC" | "mINIT"
+    lastClaimAt: v.number(),
+    totalClaimed: v.number(),
+  }).index("by_wallet_token", ["wallet", "token"]),
 });

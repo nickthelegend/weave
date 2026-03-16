@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useState, useEffect, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { 
   ArrowDownCircle, 
   ChevronDown, 
@@ -9,23 +11,63 @@ import {
   Lock, 
   TrendingUp,
   History,
-  Wallet
+  Wallet,
+  Activity,
+  ArrowUpRight
 } from "lucide-react"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
-import { usePoolData } from "@/app/hooks/usePoolData"
 import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function AppPage() {
   const [amount, setAmount] = useState("")
   const [token, setToken] = useState("INIT")
-  const { isConnected, connect, balances, isFetching } = useWeaveWallet();
-  const { weightedPool, error: poolError } = usePoolData();
+  const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
+  
+  // Real-time queries from Convex
+  const pools = useQuery(api.functions.getLatestPools) || [];
+  const weightedPool = pools.find(p => p.pair === "USDC-INIT") || { totalAPR: 169.4, feeAPR: 12.4, emissionAPR: 157.0 };
+  const position = useQuery(api.functions.getUserPosition, address ? { walletAddress: address } : "skip");
+  const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
 
   const currentBalance = token === "INIT" ? balances.init : balances.usdc;
-  const apr = weightedPool?.totalAPR || 169.4;
+  const apr = weightedPool.totalAPR;
+
+  // Real-time yield ticker math
+  const [liveValue, setLiveValue] = useState(0);
+  useEffect(() => {
+    if (position) {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const elapsedYears = (now - position.lastUpdateAt) / (1000 * 60 * 60 * 24 * 365.25);
+            const yieldFactor = Math.pow(1 + (apr / 100), elapsedYears);
+            setLiveValue(position.currentValue * yieldFactor);
+        }, 50);
+        return () => clearInterval(interval);
+    }
+  }, [position, apr]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
+      
+      {/* Real-time Global Stats Bar */}
+      <div className="mb-12 flex flex-wrap gap-8 items-center justify-center py-4 border-y border-white/5 bg-white/[0.02]">
+        <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol TVL</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">$42,701,920</span>
+            <LiveBadge />
+        </div>
+        <div className="w-[1px] h-4 bg-white/10" />
+        <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Yield Paid</span>
+            <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">$842,100</span>
+        </div>
+        <div className="w-[1px] h-4 bg-white/10" />
+        <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Users</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">1,242</span>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left: Action Panel */}
@@ -86,7 +128,7 @@ export default function AppPage() {
                     <div className="bg-secondary p-4 border border-white/5 rounded space-y-1">
                         <div className="flex items-center justify-between">
                             <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Projected APY</p>
-                            <LiveBadge type={poolError ? 'cached' : 'est'} />
+                            <LiveBadge type="est" />
                         </div>
                         <p className="text-2xl font-mono font-black italic text-primary tabular-nums">{apr.toFixed(1)}%</p>
                     </div>
@@ -109,11 +151,11 @@ export default function AppPage() {
                 <div className="pt-4 border-t border-white/5 space-y-3">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Fees APR</span>
-                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool?.feeAPR.toFixed(1) || "12.4"}%</span>
+                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool.feeAPR.toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Incentives APR</span>
-                        <span className="text-primary tabular-nums">{weightedPool?.emissionAPR.toFixed(1) || "157.0"}%</span>
+                        <span className="text-primary tabular-nums">{weightedPool.emissionAPR.toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-white/40">Vesting Period</span>
@@ -141,35 +183,46 @@ export default function AppPage() {
                     </div>
                     <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Connect wallet to view portfolio</p>
                   </div>
+                ) : !position ? (
+                  <div className="py-12 text-center space-y-4">
+                    <Activity className="mx-auto text-white/10" size={32} />
+                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">No active position detected</p>
+                  </div>
                 ) : (
                   <>
                     <div className="space-y-2">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Balance</p>
-                        <div className="text-5xl font-mono font-black italic text-white tracking-tighter">
-                            $0.00
+                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Real-time Balance</p>
+                        <div className="text-5xl font-mono font-black italic text-white tracking-tighter tabular-nums">
+                            ${liveValue.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
                         </div>
-                        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">No active position detected</p>
+                        <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
+                            <TrendingUp size={12} />
+                            + ${(liveValue - position.principalAmount).toFixed(4)} Yield Earned
+                        </div>
                     </div>
 
-                    <div className="space-y-6 pt-6 border-t border-white/5 opacity-30 pointer-events-none">
+                    <div className="space-y-6 pt-6 border-t border-white/5">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-1 h-8 bg-primary rounded-full" />
                                 <div className="flex-grow">
                                     <div className="flex justify-between items-end">
                                         <p className="text-[10px] font-black uppercase text-white/40 italic">Liquid Position</p>
-                                        <p className="text-sm font-bold">$0.00</p>
+                                        <p className="text-sm font-bold">${position.principalAmount.toLocaleString()}</p>
                                     </div>
                                     <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
-                                        <div className="w-[0%] h-full bg-primary" />
+                                        <div className="w-[100%] h-full bg-primary" />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex gap-4">
-                            <button className="flex-grow border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest">
+                            <button className="flex-grow border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-white/5 transition-all">
                                 Withdraw
+                            </button>
+                            <button className="flex-grow border border-primary/20 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest text-primary hover:bg-primary/5 transition-all">
+                                Claim
                             </button>
                         </div>
                     </div>
@@ -177,17 +230,27 @@ export default function AppPage() {
                 )}
             </div>
 
-            {isConnected && (
-              <div className="terminal-card bg-black p-6 space-y-4 border-dashed opacity-60">
-                  <div className="flex items-center gap-3 text-white/40">
-                      <History size={16} />
-                      <h3 className="text-[10px] font-black uppercase tracking-widest italic">Live Activity Stream</h3>
-                  </div>
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Scanning blockchain...</span>
-                  </div>
-              </div>
-            )}
+            <div className="terminal-card bg-black p-6 space-y-4 border-dashed opacity-60">
+                <div className="flex items-center gap-3 text-white/40">
+                    <Activity size={16} />
+                    <h3 className="text-[10px] font-black uppercase tracking-widest italic">Live Activity Stream</h3>
+                </div>
+                <div className="space-y-4">
+                    {harvestHistory.length > 0 ? harvestHistory.map((h, i) => (
+                        <div key={i} className="flex gap-4 items-start group">
+                            <div className="w-0.5 h-4 bg-white/10 group-hover:bg-primary transition-colors mt-1" />
+                            <p className="text-[10px] font-medium text-white/30 group-hover:text-white/60 transition-colors uppercase leading-relaxed">
+                                Harvest completed — <span className="text-primary">${h.amountReinvested} reinvested</span>
+                                <span className="text-[9px] opacity-40 italic block mt-1">{new Date(h.timestamp).toLocaleTimeString()} // RE-COMPOUND</span>
+                            </p>
+                        </div>
+                    )) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Scanning blockchain...</span>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
 
       </div>

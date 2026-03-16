@@ -13,10 +13,10 @@ import {
   History,
   Wallet,
   Activity,
-  ArrowUpRight,
   Mail,
-  RefreshCcw
+  X
 } from "lucide-react"
+import Link from "next/link"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
 import { usePoolData } from "@/app/hooks/usePoolData"
 import { useVault } from "@/app/hooks/useVault"
@@ -27,15 +27,33 @@ export default function AppPage() {
   const [token, setToken] = useState("INIT")
   const [useZap, setUseZap] = useState(true)
   const [withdrawShares, setWithdrawShares] = useState("")
+  const [showBanner, setShowBanner] = useState(false)
 
   const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
   const { weightedPool, error: poolError } = usePoolData();
   const { deposit, withdraw, position, stats, loading: vaultLoading } = useVault(address || undefined);
   
   const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
+  const globalStats = useQuery(api.functions.getGlobalStats);
 
   const currentBalance = token === "INIT" ? balances.init : balances.usdc;
   const apr = weightedPool?.totalAPR || 169.4;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dismissed = localStorage.getItem('weave_faucet_banner_dismissed');
+      if (isConnected && parseFloat(balances.usdc) === 0 && !dismissed) {
+        setShowBanner(true);
+      } else {
+        setShowBanner(false);
+      }
+    }
+  }, [isConnected, balances.usdc]);
+
+  const dismissBanner = () => {
+    setShowBanner(false);
+    localStorage.setItem('weave_faucet_banner_dismissed', 'true');
+  };
 
   const handleDeposit = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
@@ -52,6 +70,33 @@ export default function AppPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
       
+      {/* Faucet Notification Banner */}
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mb-8 overflow-hidden"
+          >
+            <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-500">
+                        <Zap size={16} className="fill-current" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase text-yellow-500/80 tracking-wider">
+                        You need mUSDC to use Weave. Get free test tokens → 
+                        <Link href="/faucet" className="ml-2 underline hover:text-yellow-400">Go to Faucet</Link>
+                    </p>
+                </div>
+                <button onClick={dismissBanner} className="text-yellow-500/40 hover:text-yellow-500 transition-colors">
+                    <X size={16} />
+                </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Real-time Global Stats Bar */}
       <div className="mb-12 flex flex-wrap gap-8 items-center justify-center py-4 border-y border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-3">
@@ -265,11 +310,11 @@ export default function AppPage() {
                             <LiveBadge />
                         </div>
                         <div className="text-5xl font-mono font-black italic text-white tracking-tighter tabular-nums">
-                            ${parseFloat(position.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${liveValue.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
                         </div>
                         <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
                             <TrendingUp size={12} />
-                            ${position.shares} Shares @ ${parseFloat(position.pricePerShare).toFixed(4)}
+                            {position.shares} Shares @ ${parseFloat(position.pricePerShare).toFixed(4)}
                         </div>
                     </div>
 

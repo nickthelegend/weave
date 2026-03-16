@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, LayoutDashboard, Layers, Wallet, ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react";
+import { Zap, LayoutDashboard, Layers, Wallet, ChevronDown, Copy, ExternalLink, LogOut, Droplets } from "lucide-react";
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,9 @@ export function Header() {
   const { address, isConnected, connect, disconnect, openView } = useWeaveWallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Weave always targets testnet for this hackathon
+  const isTestnet = true; 
 
   const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
 
@@ -47,6 +50,11 @@ export function Header() {
           <Link href="/strategies" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
             <Layers size={14} /> Strategies
           </Link>
+          {isTestnet && (
+            <Link href="/faucet" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
+              <Droplets size={14} className="text-primary" /> Faucet
+            </Link>
+          )}
         </div>
 
         <div className="relative" ref={dropdownRef}>
@@ -80,7 +88,7 @@ export function Header() {
                     <Copy size={14} /> Copy Address
                 </button>
                 <a 
-                  href={`https://initia.scan.id/address/${address}`} 
+                  href={`https://scan.testnet.initia.xyz/address/${address}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full text-left px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:text-primary hover:bg-primary/5 rounded transition-all flex items-center gap-3"

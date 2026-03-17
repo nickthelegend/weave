@@ -846,6 +846,167 @@
       "artifacts": [
         "WeaveVesting"
       ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/CrossMinitiaRouter.sol": {
+      "lastModificationDate": 1773722401233,
+      "contentHash": "a4fcaff5fcacab633b755937f078e313",
+      "sourceName": "contracts/CrossMinitiaRouter.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "CrossMinitiaRouter",
+        "IStrategy"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/strategies/TucanaStrategy.sol": {
+      "lastModificationDate": 1773722876369,
+      "contentHash": "cc31f33ed73ab6ea92969047399fdf60",
+      "sourceName": "contracts/strategies/TucanaStrategy.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ITucana",
+        "TucanaStrategy"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/strategies/BlackwingStrategy.sol": {
+      "lastModificationDate": 1773722857048,
+      "contentHash": "6bbde6399bc4257e077423c4e6bd6c60",
+      "sourceName": "contracts/strategies/BlackwingStrategy.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "BlackwingStrategy",
+        "IBlackwing"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/strategies/MockProtocol.sol": {
+      "lastModificationDate": 1773722916001,
+      "contentHash": "7eff9a86cabac54561fef71df4c1d6d6",
+      "sourceName": "contracts/strategies/MockProtocol.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MockProtocol"
+      ]
     }
   }
 }

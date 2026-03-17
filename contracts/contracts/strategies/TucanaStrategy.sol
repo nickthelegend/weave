@@ -10,7 +10,7 @@ interface ITucana {
     function addLiquidity(uint256 amount) external;
     function removeLiquidity(uint256 amount) external;
     function claimFundingFees() external returns (uint256);
-    function pendingFees(address provider) view returns (uint256);
+    function pendingFees(address provider) external view returns (uint256);
 }
 
 /**
@@ -31,6 +31,10 @@ contract TucanaStrategy is Ownable {
     constructor(address _depositToken, address _tucanaVault, address _weaveVault) Ownable(msg.sender) {
         depositToken = IERC20(_depositToken);
         tucanaVault = ITucana(_tucanaVault);
+        weaveVault = _weaveVault;
+    }
+
+    function setWeaveVault(address _weaveVault) external onlyOwner {
         weaveVault = _weaveVault;
     }
 

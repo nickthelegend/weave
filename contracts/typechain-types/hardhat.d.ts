@@ -62,9 +62,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ReentrancyGuard__factory>;
     getContractFactory(
+      name: "CrossMinitiaRouter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CrossMinitiaRouter__factory>;
+    getContractFactory(
+      name: "IStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStrategy__factory>;
+    getContractFactory(
       name: "MockERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockERC20__factory>;
+    getContractFactory(
+      name: "BlackwingStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BlackwingStrategy__factory>;
+    getContractFactory(
+      name: "IBlackwing",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBlackwing__factory>;
+    getContractFactory(
+      name: "MockProtocol",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockProtocol__factory>;
+    getContractFactory(
+      name: "ITucana",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ITucana__factory>;
+    getContractFactory(
+      name: "TucanaStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TucanaStrategy__factory>;
     getContractFactory(
       name: "VeWeave",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -171,10 +199,45 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ReentrancyGuard>;
     getContractAt(
+      name: "CrossMinitiaRouter",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CrossMinitiaRouter>;
+    getContractAt(
+      name: "IStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStrategy>;
+    getContractAt(
       name: "MockERC20",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.MockERC20>;
+    getContractAt(
+      name: "BlackwingStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BlackwingStrategy>;
+    getContractAt(
+      name: "IBlackwing",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBlackwing>;
+    getContractAt(
+      name: "MockProtocol",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockProtocol>;
+    getContractAt(
+      name: "ITucana",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ITucana>;
+    getContractAt(
+      name: "TucanaStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TucanaStrategy>;
     getContractAt(
       name: "VeWeave",
       address: string | ethers.Addressable,
@@ -280,9 +343,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "CrossMinitiaRouter",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CrossMinitiaRouter>;
+    deployContract(
+      name: "IStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IStrategy>;
+    deployContract(
       name: "MockERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC20>;
+    deployContract(
+      name: "BlackwingStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BlackwingStrategy>;
+    deployContract(
+      name: "IBlackwing",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBlackwing>;
+    deployContract(
+      name: "MockProtocol",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MockProtocol>;
+    deployContract(
+      name: "ITucana",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ITucana>;
+    deployContract(
+      name: "TucanaStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TucanaStrategy>;
     deployContract(
       name: "VeWeave",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -389,10 +480,45 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "CrossMinitiaRouter",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CrossMinitiaRouter>;
+    deployContract(
+      name: "IStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IStrategy>;
+    deployContract(
       name: "MockERC20",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC20>;
+    deployContract(
+      name: "BlackwingStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BlackwingStrategy>;
+    deployContract(
+      name: "IBlackwing",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBlackwing>;
+    deployContract(
+      name: "MockProtocol",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MockProtocol>;
+    deployContract(
+      name: "ITucana",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ITucana>;
+    deployContract(
+      name: "TucanaStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TucanaStrategy>;
     deployContract(
       name: "VeWeave",
       args: any[],

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 interface IBlackwing {
     function deposit(uint256 amount) external;
     function withdraw(uint256 amount) external;
-    function pendingRewards(address user) view returns (uint256);
+    function pendingRewards(address user) external view returns (uint256);
     function claimRewards() external;
 }
 
@@ -32,6 +32,10 @@ contract BlackwingStrategy is Ownable {
     constructor(address _depositToken, address _blackwingVault, address _weaveVault) Ownable(msg.sender) {
         depositToken = IERC20(_depositToken);
         blackwingVault = IBlackwing(_blackwingVault);
+        weaveVault = _weaveVault;
+    }
+
+    function setWeaveVault(address _weaveVault) external onlyOwner {
         weaveVault = _weaveVault;
     }
 

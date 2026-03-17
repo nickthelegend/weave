@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   ArrowDownCircle, 
@@ -124,8 +124,8 @@ export default function AppPage() {
                     <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-500">
                         <Zap size={16} className="fill-current" />
                     </div>
-                    <p className="text-[10px] font-black uppercase text-yellow-500/80 tracking-widest">
-                        Low Liquidity Detected. Get free test tokens → 
+                    <p className="text-[10px] font-black uppercase text-yellow-500/80 tracking-widest leading-relaxed">
+                        You need testnet assets to deploy liquidity. Get free test tokens → 
                         <Link href="/faucet" className="ml-2 underline hover:text-yellow-400">Request 10,000 mUSDC</Link>
                     </p>
                 </div>
@@ -151,7 +151,7 @@ export default function AppPage() {
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Future Staker Rewards</span>
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Staker Rewards</span>
             <span className="text-sm font-mono font-bold text-white tabular-nums">${parseFloat(position.totalProtocolFees).toLocaleString()}</span>
         </div>
       </div>
@@ -211,7 +211,7 @@ export default function AppPage() {
                         onClick={handleDeposit}
                         disabled={depositStatus === "approving" || depositStatus === "depositing" || !amount}
                         className={`w-full py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] transition-all flex items-center justify-center gap-3
-                            ${depositStatus === "success" ? "bg-[#22c55e]" : "bg-primary glow-primary"}
+                            ${depositStatus === "success" ? "bg-[#22c55e]" : "bg-primary shadow-[0_0_40px_rgba(173,70,255,0.4)]"}
                             ${depositStatus === "error" ? "bg-red-500" : ""}
                             disabled:opacity-50 active:scale-95
                         `}
@@ -239,7 +239,7 @@ export default function AppPage() {
                     )}
                   </div>
                 ) : (
-                  <button onClick={() => connect()} className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] glow-primary flex items-center justify-center gap-3 active:scale-95 transition-all">
+                  <button onClick={() => connect()} className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_40px_rgba(173,70,255,0.4)] flex items-center justify-center gap-3 active:scale-95 transition-all">
                       <Wallet size={18} /> Connect Wallet to Deposit
                   </button>
                 )}
@@ -251,7 +251,7 @@ export default function AppPage() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors">WEAVE Token — Q3 2025</h3>
-                            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Governance & Reward Distribution</p>
+                            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Institutional Staking Rewards</p>
                         </div>
                         <div className="bg-primary/10 border border-primary/20 px-6 py-4 rounded-sm flex flex-col items-center">
                             <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Fees Accrued</p>
@@ -277,6 +277,20 @@ export default function AppPage() {
                             <p className="text-xs font-bold font-mono text-primary">10%</p>
                         </div>
                     </div>
+                    
+                    <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                        <div className="w-full relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10" size={16} />
+                            <input 
+                                type="email" 
+                                placeholder="Enter address for priority airdrop..."
+                                className="w-full bg-white/5 border border-white/10 rounded-sm p-4 pl-12 text-xs outline-none focus:border-primary/40 transition-all placeholder:text-white/5 tabular-nums"
+                            />
+                        </div>
+                        <button className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
+                            Join_Waitlist
+                        </button>
+                    </div>
                 </div>
                 <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
                     <Zap size={250} className="text-primary fill-current" />
@@ -285,7 +299,7 @@ export default function AppPage() {
         </div>
 
         <div className="lg:col-span-5 space-y-8">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="terminal-card bg-[#0A0A0A] p-8 space-y-8">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="terminal-card bg-[#0A0A0A] p-8 space-y-8 border-primary/10">
                 <div className="flex justify-between items-center">
                     <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-white/90">
                         <Lock size={20} className="text-white/40" />

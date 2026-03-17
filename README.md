@@ -65,5 +65,14 @@ npx hardhat run scripts/deploy.ts --network initiaTestnet
 - **Q4 2025**: Concentrated Liquidity routing for 300%+ target APYs.
 - **Q1 2026**: Cross-Minitia yield aggregation.
 
+## V3 — Cross-Minitia Expansion (Q4 2026)
+
+Weave V3 introduces cross-Minitia vaults, routing capital to DeFi protocols across the entire Initia ecosystem:
+- **Blackwing**: Margin trading yield
+- **Tucana**: Perpetual funding rates
+- **More**: Any Minitia with sustainable yield
+
+Capital allocation is decided by **veWEAVE governance gauge voting**. The community decides where TVL flows, turning Weave into the central yield-steering engine for the Initia network.
+
 ---
 *Built for the Initia Odyssey Hackathon 2026.*

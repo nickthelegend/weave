@@ -1,39 +1,47 @@
 "use client";
 
-import { useChain } from "@cosmos-kit/react";
-import { useMemo } from "react";
+import { useInterwovenKit } from "@initia/interwovenkit-react";
 import { createWalletClient, custom, Address } from "viem";
 import { initiaTestnet } from "@/lib/contractConfig";
 
-export function useWeaveWallet(chainName: string = "initiatestnet") {
+export function useWeaveWallet() {
   const {
     address,
-    status,
-    connect,
+    initiaAddress,
+    hexAddress,
+    isConnected,
+    openConnect,
     disconnect,
-    openView,
-  } = useChain(chainName);
+    openWallet,
+    requestTxBlock,
+  } = useInterwovenKit();
 
-  // Added getWalletClient helper for viem
+  // Helper for EVM interactions using viem
   const getWalletClient = async () => {
-    if (!window.ethereum) throw new Error("No ethereum provider found");
+    const ethereum = (window as any).ethereum;
+    if (typeof window === 'undefined' || !ethereum) {
+      throw new Error("No ethereum provider found");
+    }
     return createWalletClient({
-      account: address as Address,
+      account: hexAddress as Address,
       chain: initiaTestnet as any,
-      transport: custom((window as any).ethereum),
+      transport: custom(ethereum),
     });
   };
 
-  const balances = { usdc: "0.00", init: "0.00" }; // Placeholder, kept for interface compatibility
+  const balances = { usdc: "0.00", init: "0.00" };
 
   return {
-    address,
-    isConnected: status === "Connected",
-    isConnecting: status === "Connecting",
+    address: hexAddress || address, // Default to hex for EVM-heavy app
+    initiaAddress,
+    isConnected,
+    isConnecting: false,
+    isFetching: false,
     balances,
-    connect,
+    connect: openConnect,
     disconnect,
-    openView,
+    openView: openWallet,
     getWalletClient,
+    requestTxBlock,
   };
 }

@@ -13,8 +13,11 @@ import { CONTRACT_ADDRESSES, ABIS } from '@/lib/contracts';
 import { showTxToast } from '@/app/components/TxToast';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { useWeaveWallet } from './useWeaveWallet';
 
-export function useFaucet(address: string | undefined) {
+export function useFaucet(addressOverride?: string) {
+  const { address: walletAddress, getWalletClient } = useWeaveWallet();
+  const address = addressOverride || walletAddress;
   const [loading, setLoading] = useState(false);
   const recordClaim = useMutation(api.faucet.recordFaucetClaim);
 
@@ -41,11 +44,7 @@ export function useFaucet(address: string | undefined) {
     const toastId = showTxToast.pending(`Minting ${tokenType}...`);
 
     try {
-      const walletClient = createWalletClient({
-        account: address as Address,
-        chain: minievm as any,
-        transport: custom((window as any).ethereum)
-      });
+      const walletClient = await getWalletClient();
 
       const { request } = await publicClient.simulateContract({
         account: address as Address,
@@ -62,7 +61,8 @@ export function useFaucet(address: string | undefined) {
       await recordClaim({
         walletAddress: address,
         token: tokenType,
-        amount: Number(amount)
+        amount: Number(amount),
+        hash: hash
       });
 
       // @ts-ignore

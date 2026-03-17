@@ -6,9 +6,10 @@ import { mainnet } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { connectorsForWallets, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { initiaPrivyWallet, injectStyles, InterwovenKitProvider, TESTNET } from "@initia/interwovenkit-react";
+import { initiaPrivyWallet, injectStyles, InterwovenKitProvider, TESTNET, PRIVY_APP_ID } from "@initia/interwovenkit-react";
 // @ts-ignore
 import interwovenKitStyles from "@initia/interwovenkit-react/styles.js";
+import { PrivyProvider } from "@privy-io/react-auth";
 import { ThemeProvider } from "next-themes";
 
 const connectors = connectorsForWallets(
@@ -60,9 +61,18 @@ export function Providers({ children }: PropsWithChildren) {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
           <RainbowKitProvider theme={darkTheme()}>
-            <InterwovenKitProvider {...TESTNET} defaultChainId="minievm-2">
-              {children}
-            </InterwovenKitProvider>
+            <PrivyProvider
+              appId={PRIVY_APP_ID}
+              config={{
+                loginMethodsAndOrder: {
+                  primary: [`privy:${PRIVY_APP_ID}`, 'detected_ethereum_wallets'],
+                },
+              }}
+            >
+              <InterwovenKitProvider {...TESTNET} defaultChainId="minievm-2">
+                {children}
+              </InterwovenKitProvider>
+            </PrivyProvider>
           </RainbowKitProvider>
         </WagmiProvider>
       </QueryClientProvider>

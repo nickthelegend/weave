@@ -64,8 +64,8 @@ export default function GovernancePage() {
 
             {/* Header */}
             <div className="space-y-1">
-                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">Governance Terminal</h1>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] italic">veWEAVE Staking & Capital Allocation</p>
+                <h1 className="text-5xl font-black  uppercase tracking-tighter text-white">Governance Terminal</h1>
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] ">veWEAVE Staking & Capital Allocation</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -76,11 +76,11 @@ export default function GovernancePage() {
                     {/* Lock WEAVE */}
                     <div className="terminal-card bg-black p-8 space-y-8">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                            <h2 className="text-xl font-black  uppercase tracking-tighter flex items-center gap-3">
                                 <Lock className="text-primary" />
                                 Lock WEAVE
                             </h2>
-                            <div className="text-[10px] font-black uppercase text-white/40 italic">
+                            <div className="text-[10px] font-black uppercase text-white/40 ">
                                 Multiplier: {durations[lockDuration].multiplier}x
                             </div>
                         </div>
@@ -88,7 +88,7 @@ export default function GovernancePage() {
                         <div className="space-y-6">
                             <div className="bg-[#050505] border border-white/5 p-6 rounded-sm space-y-4">
                                 <div className="flex justify-between items-center">
-                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Amount to lock</p>
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest ">Amount to lock</p>
                                     <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Balance: 0.00 WEAVE</p>
                                 </div>
                                 <input
@@ -105,7 +105,7 @@ export default function GovernancePage() {
                                     <button
                                         key={i}
                                         onClick={() => setLockDuration(i)}
-                                        className={`py-3 rounded-sm text-[10px] font-black uppercase italic border transition-all
+                                        className={`py-3 rounded-sm text-[10px] font-black uppercase  border transition-all
                                     ${lockDuration === i ? "bg-primary border-primary text-white shadow-[0_0_20px_rgba(173,70,255,0.3)]" : "bg-secondary border-white/5 text-white/40 hover:border-primary/40"}
                                 `}
                                     >
@@ -117,16 +117,16 @@ export default function GovernancePage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-secondary p-4 border border-white/5 rounded-sm space-y-1">
-                                <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">veWEAVE Power</p>
-                                <p className="text-2xl font-mono font-black italic text-primary tabular-nums tracking-tighter">{projectedVe}</p>
+                                <p className="text-[9px] font-black text-white/20 uppercase tracking-widest ">veWEAVE Power</p>
+                                <p className="text-2xl font-mono font-black  text-primary tabular-nums tracking-tighter">{projectedVe}</p>
                             </div>
                             <div className="bg-secondary p-4 border border-white/5 rounded-sm space-y-1">
-                                <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Fee Share (Est)</p>
-                                <p className="text-2xl font-mono font-black italic text-white tabular-nums">0.0%</p>
+                                <p className="text-[9px] font-black text-white/20 uppercase tracking-widest ">Fee Share (Est)</p>
+                                <p className="text-2xl font-mono font-black  text-white tabular-nums">0.0%</p>
                             </div>
                         </div>
 
-                        <button className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+                        <button className="w-full bg-primary py-6 rounded-sm font-black uppercase  text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
                             Execute Lock_
                         </button>
                     </div>
@@ -135,15 +135,15 @@ export default function GovernancePage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div className="terminal-card p-6 bg-white/[0.01] space-y-2">
                             <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Total Locked</p>
-                            <p className="text-xl font-mono font-bold italic text-white">12.4M WEAVE</p>
+                            <p className="text-xl font-mono font-bold  text-white">12.4M WEAVE</p>
                         </div>
                         <div className="terminal-card p-6 bg-white/[0.01] space-y-2">
                             <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Total veWEAVE</p>
-                            <p className="text-xl font-mono font-bold italic text-primary">48.2M</p>
+                            <p className="text-xl font-mono font-bold  text-primary">48.2M</p>
                         </div>
                         <div className="terminal-card p-6 bg-white/[0.01] space-y-2">
                             <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Avg Lock</p>
-                            <p className="text-xl font-mono font-bold italic text-white text-glow">2.4 Years</p>
+                            <p className="text-xl font-mono font-bold  text-white text-glow">2.4 Years</p>
                         </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@ export default function GovernancePage() {
                     {/* Your Position */}
                     <div className="terminal-card bg-[#0A0A0A] p-8 space-y-8 border-primary/20">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                            <h2 className="text-xl font-black  uppercase tracking-tighter flex items-center gap-3">
                                 <Target size={20} className="text-primary" />
                                 My Governance
                             </h2>
@@ -165,7 +165,7 @@ export default function GovernancePage() {
                             <div className="flex justify-between items-end border-b border-white/5 pb-4">
                                 <div className="space-y-1">
                                     <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">veWEAVE Balance</p>
-                                    <p className="text-4xl font-mono font-black italic text-white tracking-tighter tabular-nums">0.00</p>
+                                    <p className="text-4xl font-mono font-black  text-white tracking-tighter tabular-nums">0.00</p>
                                 </div>
                                 <div className="text-right space-y-1">
                                     <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Staked</p>
@@ -181,7 +181,7 @@ export default function GovernancePage() {
                                     </div>
                                     <span className="text-sm font-mono font-bold text-[#22c55e] tabular-nums">$0.00 USDC</span>
                                 </div>
-                                <button className="w-full border border-white/10 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-white/5 transition-all opacity-30 cursor-not-allowed">
+                                <button className="w-full border border-white/10 py-4 rounded-sm font-black uppercase  text-[10px] tracking-widest hover:bg-white/5 transition-all opacity-30 cursor-not-allowed">
                                     Claim Rewards
                                 </button>
                             </div>
@@ -191,7 +191,7 @@ export default function GovernancePage() {
                     {/* Gauge Voting */}
                     <div className="terminal-card bg-black p-8 space-y-8">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                            <h2 className="text-xl font-black  uppercase tracking-tighter flex items-center gap-3">
                                 <Gavel className="text-primary" />
                                 Gauge Voting
                             </h2>
@@ -228,7 +228,7 @@ export default function GovernancePage() {
                                                 <div className="absolute right-[90%] top-0 bottom-0 w-[1px] bg-primary z-10" /> {/* 10% marker */}
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[8px] font-black text-primary uppercase tracking-widest italic">4.5% / 10.0% to activate</span>
+                                                <span className="text-[8px] font-black text-primary uppercase tracking-widest ">4.5% / 10.0% to activate</span>
                                                 <button className="text-[8px] font-black text-white/20 hover:text-primary transition-colors flex items-center gap-1 uppercase">
                                                     Activate <ArrowUpRight size={8} />
                                                 </button>
@@ -245,7 +245,7 @@ export default function GovernancePage() {
                                 </div>
                             ))}
 
-                            <button className="w-full border border-primary/40 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-[0_0_20px_rgba(173,70,255,0.1)] active:scale-95">
+                            <button className="w-full border border-primary/40 py-4 rounded-sm font-black uppercase  text-[10px] tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-[0_0_20px_rgba(173,70,255,0.1)] active:scale-95">
                                 Submit Votes_
                             </button>
                             <p className="text-[8px] font-bold text-white/20 uppercase text-center tracking-[0.2em]">

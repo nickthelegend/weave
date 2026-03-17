@@ -56,5 +56,6 @@ export default defineSchema({
     token: v.string(), // "mUSDC" | "mINIT"
     lastClaimAt: v.number(),
     totalClaimed: v.number(),
+    lastTxHash: v.optional(v.string()),
   }).index("by_wallet_token", ["wallet", "token"]),
 });

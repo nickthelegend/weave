@@ -6,11 +6,12 @@ export const recordFaucetClaim = mutation({
     walletAddress: v.string(),
     token: v.string(), // "mUSDC" | "mINIT"
     amount: v.number(),
+    hash: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("faucetClaims")
-      .withIndex("by_wallet_token", (q) => 
+      .withIndex("by_wallet_token", (q) =>
         q.eq("wallet", args.walletAddress).eq("token", args.token)
       )
       .first();
@@ -20,6 +21,7 @@ export const recordFaucetClaim = mutation({
       await ctx.db.patch(existing._id, {
         lastClaimAt: now,
         totalClaimed: existing.totalClaimed + args.amount,
+        lastTxHash: args.hash,
       });
     } else {
       await ctx.db.insert("faucetClaims", {
@@ -27,6 +29,7 @@ export const recordFaucetClaim = mutation({
         token: args.token,
         lastClaimAt: now,
         totalClaimed: args.amount,
+        lastTxHash: args.hash,
       });
     }
   },
@@ -37,7 +40,7 @@ export const getFaucetClaim = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("faucetClaims")
-      .withIndex("by_wallet_token", (q) => 
+      .withIndex("by_wallet_token", (q) =>
         q.eq("wallet", args.walletAddress).eq("token", args.token)
       )
       .first();

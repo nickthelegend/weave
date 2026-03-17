@@ -11,12 +11,14 @@ import { toast } from "sonner";
 export function useVault() {
   const { address, getWalletClient } = useWeaveWallet();
   const [loading, setLoading] = useState(false);
+  
   const [stats, setStats] = useState({
     totalDeposited: "0",
     totalYieldGenerated: "0",
     totalProtocolFeesAccrued: "0",
     pricePerShare: "1.00",
   });
+  
   const [position, setPosition] = useState({
     value: "0",
     shares: "0",
@@ -33,7 +35,7 @@ export function useVault() {
 
       setStats({
         totalDeposited: formatUnits(data[0], 6),
-        totalShares: formatUnits(data[1], 6), // Not strictly needed for UI but good to have
+        totalShares: formatUnits(data[1], 6),
         totalYieldGenerated: formatUnits(data[2], 6),
         totalProtocolFeesAccrued: formatUnits(data[3], 6),
         pricePerShare: formatUnits(data[4], 6),
@@ -82,100 +84,92 @@ export function useVault() {
     const interval = setInterval(() => {
       fetchStats();
       if (address) fetchPosition();
-    }, 30000);
+    }, 15000);
     return () => clearInterval(interval);
   }, [address, fetchStats, fetchPosition]);
 
+  const getUSDCBalance = async () => {
+    if (!address) return "0";
+    const bal = await publicClient.readContract({
+      address: MOCK_USDC_ADDRESS,
+      abi: ERC20_ABI,
+      functionName: "balanceOf",
+      args: [address as Address]
+    });
+    return formatUnits(bal as bigint, 6);
+  };
+
   const deposit = async (usdcAmount: string) => {
     if (!address) throw new Error("Wallet not connected");
-    setLoading(true);
-    const toastId = showTxToast.pending("Initiating Deposit...");
+    
+    const walletClient = await getWalletClient();
+    const amount = parseUnits(usdcAmount, 6);
 
-    try {
-      const walletClient = await getWalletClient();
-      const amount = parseUnits(usdcAmount, 6);
+    // Step 1: Check allowance
+    const allowance = (await publicClient.readContract({
+      address: MOCK_USDC_ADDRESS,
+      abi: ERC20_ABI,
+      functionName: "allowance",
+      args: [address as Address, VAULT_ADDRESS],
+    })) as bigint;
 
-      // Step 1: Check allowance
-      const allowance = (await publicClient.readContract({
+    // Step 2: Approve if needed
+    if (allowance < amount) {
+      const { request: appReq } = await publicClient.simulateContract({
+        account: address as Address,
         address: MOCK_USDC_ADDRESS,
         abi: ERC20_ABI,
-        functionName: "allowance",
-        args: [address as Address, VAULT_ADDRESS],
-      })) as bigint;
-
-      if (allowance < amount) {
-        toast.loading("Approving USDC...", { id: toastId });
-        const { request: appReq } = await publicClient.simulateContract({
-          account: address as Address,
-          address: MOCK_USDC_ADDRESS,
-          abi: ERC20_ABI,
-          functionName: "approve",
-          args: [VAULT_ADDRESS, amount],
-        });
-        const appHash = await walletClient.writeContract(appReq);
-        await publicClient.waitForTransactionReceipt({ hash: appHash });
-      }
-
-      // Step 2: Deposit
-      toast.loading("Confirming deposit...", { id: toastId });
-      const { request: depReq } = await publicClient.simulateContract({
-        account: address as Address,
-        address: VAULT_ADDRESS,
-        abi: VAULT_ABI,
-        functionName: "deposit",
-        args: [amount],
+        functionName: "approve",
+        args: [VAULT_ADDRESS, amount],
       });
-      const depHash = await walletClient.writeContract(depReq);
-      await publicClient.waitForTransactionReceipt({ hash: depHash });
-
-      toast.dismiss(toastId);
-      showTxToast.success(depHash, "Deposit confirmed!");
-      fetchPosition();
-      fetchStats();
-    } catch (error) {
-      toast.dismiss(toastId);
-      showTxToast.error(error);
-      console.error(error);
-    } finally {
-      setLoading(false);
+      const approveTx = await walletClient.writeContract(appReq);
+      await publicClient.waitForTransactionReceipt({ hash: approveTx });
     }
+
+    // Step 3: Deposit
+    const { request: depReq } = await publicClient.simulateContract({
+      account: address as Address,
+      address: VAULT_ADDRESS,
+      abi: VAULT_ABI,
+      functionName: "deposit",
+      args: [amount],
+    });
+    const depositTx = await walletClient.writeContract(depReq);
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: depositTx });
+    
+    await fetchPosition();
+    await fetchStats();
+    
+    return receipt;
   };
 
   const withdraw = async (shareAmount: string) => {
     if (!address) throw new Error("Wallet not connected");
-    setLoading(true);
-    const toastId = showTxToast.pending("Initiating Withdrawal...");
+    
+    const walletClient = await getWalletClient();
+    const shares = parseUnits(shareAmount, 6);
 
-    try {
-      const walletClient = await getWalletClient();
-      const shares = parseUnits(shareAmount, 6);
-
-      const { request } = await publicClient.simulateContract({
-        account: address as Address,
-        address: VAULT_ADDRESS,
-        abi: VAULT_ABI,
-        functionName: "withdraw",
-        args: [shares],
-      });
-      const hash = await walletClient.writeContract(request);
-      await publicClient.waitForTransactionReceipt({ hash });
-
-      toast.dismiss(toastId);
-      showTxToast.success(hash, "Withdrawal successful!");
-      fetchPosition();
-      fetchStats();
-    } catch (error) {
-      toast.dismiss(toastId);
-      showTxToast.error(error);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    const { request } = await publicClient.simulateContract({
+      account: address as Address,
+      address: VAULT_ADDRESS,
+      abi: VAULT_ABI,
+      functionName: "withdraw",
+      args: [shares],
+    });
+    const tx = await walletClient.writeContract(request);
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+    
+    await fetchPosition();
+    await fetchStats();
+    
+    return receipt;
   };
 
   return {
     deposit,
     withdraw,
+    getUSDCBalance,
+    fetchPosition,
     stats,
     position,
     loading,

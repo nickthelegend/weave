@@ -14,7 +14,9 @@ import {
   Wallet,
   Activity,
   Mail,
-  X
+  X,
+  Loader2,
+  ExternalLink
 } from "lucide-react"
 import Link from "next/link"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
@@ -24,31 +26,35 @@ import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function AppPage() {
   const [amount, setAmount] = useState("")
-  const [token, setToken] = useState("INIT")
-  const [useZap, setUseZap] = useState(true)
+  const [token, setToken] = useState("USDC")
   const [withdrawShares, setWithdrawShares] = useState("")
   const [showBanner, setShowBanner] = useState(false)
+  const [depositStatus, setDepositStatus] = useState<"idle"|"approving"|"depositing"|"success"|"error">("idle")
+  const [lastTxHash, setLastTxHash] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
   const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
   const { weightedPool, error: poolError } = usePoolData();
-  const { deposit, withdraw, position, stats, loading: vaultLoading } = useVault(address || undefined);
+  const { deposit, withdraw, position, stats, getUSDCBalance, fetchPosition } = useVault();
   
   const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
   const globalStats = useQuery(api.functions.getGlobalStats);
 
-  const currentBalance = token === "INIT" ? balances.init : balances.usdc;
   const apr = weightedPool?.totalAPR || 169.4;
 
+  // Banner Logic
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const dismissed = localStorage.getItem('weave_faucet_banner_dismissed');
-      if (isConnected && parseFloat(balances.usdc) === 0 && !dismissed) {
-        setShowBanner(true);
-      } else {
-        setShowBanner(false);
-      }
+    if (typeof window !== 'undefined' && isConnected) {
+        getUSDCBalance().then(bal => {
+            const dismissed = localStorage.getItem('weave_faucet_banner_dismissed');
+            if (parseFloat(bal) === 0 && !dismissed) {
+                setShowBanner(true);
+            } else {
+                setShowBanner(false);
+            }
+        });
     }
-  }, [isConnected, balances.usdc]);
+  }, [isConnected, address]);
 
   const dismissBanner = () => {
     setShowBanner(false);
@@ -57,15 +63,52 @@ export default function AppPage() {
 
   const handleDeposit = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
-    await deposit(amount, useZap);
-    setAmount("");
+    setDepositStatus("approving");
+    setErrorMsg("");
+    
+    try {
+        // Step 1 & 2: Approve and Deposit
+        const receipt = await deposit(amount);
+        setLastTxHash(receipt.transactionHash);
+        setDepositStatus("success");
+        setAmount("");
+    } catch (e: any) {
+        setDepositStatus("error");
+        if (e.message.toLowerCase().includes("insufficient")) {
+            setErrorMsg("Not enough mUSDC balance");
+        } else if (e.message.toLowerCase().includes("rejected")) {
+            setErrorMsg("Transaction cancelled");
+        } else {
+            setErrorMsg("Transaction failed");
+        }
+        console.error(e);
+    }
   };
 
   const handleWithdraw = async () => {
     if (!withdrawShares || parseFloat(withdrawShares) <= 0) return;
-    await withdraw(withdrawShares);
-    setWithdrawShares("");
+    try {
+        await withdraw(withdrawShares);
+        setWithdrawShares("");
+    } catch (e) {
+        console.error(e);
+    }
   };
+
+  // Real-time yield ticker math
+  const [liveValue, setLiveValue] = useState(0);
+  useEffect(() => {
+    if (position && parseFloat(position.shares) > 0) {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            // In a real scenario, yield grows by PPS. Here we simulate continuous compounding.
+            const pps = parseFloat(position.pricePerShare);
+            const shares = parseFloat(position.shares);
+            setLiveValue(shares * pps);
+        }, 1000);
+        return () => clearInterval(interval);
+    }
+  }, [position]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
@@ -106,13 +149,13 @@ export default function AppPage() {
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Yield Paid</span>
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Yield Generated</span>
             <span className="text-sm font-mono font-bold text-[#0B7B5E] tabular-nums">${parseFloat(stats.totalYieldGenerated).toLocaleString()}</span>
         </div>
         <div className="w-[1px] h-4 bg-white/10" />
         <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Users</span>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">1,242</span>
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol Fees</span>
+            <span className="text-sm font-mono font-bold text-white tabular-nums">${parseFloat(stats.totalProtocolFeesAccrued).toLocaleString()}</span>
         </div>
       </div>
 
@@ -128,8 +171,8 @@ export default function AppPage() {
                     </h2>
                     {isConnected && (
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40">
-                          Balance: <span className={isFetching ? "animate-pulse" : ""}>{currentBalance} {token}</span>
-                          <button onClick={() => setAmount(currentBalance)} className="text-primary hover:underline ml-1">MAX</button>
+                          Balance: <span className={isFetching ? "animate-pulse" : ""}>{token === "INIT" ? balances.init : balances.usdc} {token}</span>
+                          <button onClick={() => setAmount(token === "INIT" ? balances.init : balances.usdc)} className="text-primary hover:underline ml-1">MAX</button>
                       </div>
                     )}
                 </div>
@@ -158,22 +201,13 @@ export default function AppPage() {
                         </button>
                     </div>
 
-                    <div 
-                        onClick={() => setUseZap(!useZap)}
-                        className={`flex items-center justify-between p-4 border rounded group cursor-pointer transition-colors ${useZap ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-white/5'}`}
-                    >
+                    <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded">
                         <div className="flex items-center gap-3">
-                            <Zap size={18} className={useZap ? "text-primary fill-current" : "text-white/20"} />
+                            <Zap size={18} className="text-primary fill-current" />
                             <div>
-                                <p className={`text-[10px] font-black uppercase italic tracking-widest ${useZap ? 'text-primary' : 'text-white/40'}`}>Zap Mode {useZap ? 'Active' : 'Disabled'}</p>
-                                <p className="text-[9px] font-bold text-white/40 uppercase">Automatic LP Formation via single token</p>
+                                <p className="text-[10px] font-black uppercase italic text-primary tracking-widest">Auto-Compound Active</p>
+                                <p className="text-[9px] font-bold text-white/40 uppercase">Optimizing yield across Initia ecosystem</p>
                             </div>
-                        </div>
-                        <div className={`w-10 h-5 rounded-full relative p-1 transition-colors ${useZap ? 'bg-primary/20' : 'bg-white/10'}`}>
-                            <motion.div 
-                                animate={{ x: useZap ? 20 : 0 }}
-                                className={`w-3 h-3 rounded-full ${useZap ? 'bg-primary' : 'bg-white/20'}`} 
-                            />
                         </div>
                     </div>
                 </div>
@@ -182,7 +216,7 @@ export default function AppPage() {
                     <div className="bg-secondary p-4 border border-white/5 rounded space-y-1">
                         <div className="flex items-center justify-between">
                             <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Projected APY</p>
-                            <LiveBadge type={poolError ? 'cached' : 'est'} />
+                            <LiveBadge type="est" />
                         </div>
                         <p className="text-2xl font-mono font-black italic text-primary tabular-nums">{apr.toFixed(1)}%</p>
                     </div>
@@ -193,33 +227,43 @@ export default function AppPage() {
                 </div>
 
                 {isConnected ? (
-                  <button 
-                    onClick={handleDeposit}
-                    disabled={vaultLoading || !amount}
-                    className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                  >
-                      {vaultLoading ? 'Processing TX...' : 'Execute Deposit_'}
-                  </button>
+                  <div className="space-y-4">
+                    <button 
+                        onClick={handleDeposit}
+                        disabled={depositStatus === "approving" || depositStatus === "depositing" || !amount}
+                        className={`w-full py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] transition-all flex items-center justify-center gap-3
+                            ${depositStatus === "success" ? "bg-[#0B7B5E] text-white" : "bg-primary text-white hover:scale-[1.02] shadow-[0_0_30px_rgba(173,70,255,0.2)]"}
+                            ${depositStatus === "error" ? "bg-red-500" : ""}
+                            disabled:opacity-50
+                        `}
+                    >
+                        {(depositStatus === "approving" || depositStatus === "depositing") && <Loader2 className="animate-spin" size={20} />}
+                        {depositStatus === "idle" && "Execute Deposit_"}
+                        {depositStatus === "approving" && "Approving USDC..."}
+                        {depositStatus === "depositing" && "Confirming Deposit..."}
+                        {depositStatus === "success" && "Deposit Confirmed ✓"}
+                        {depositStatus === "error" && "Failed — Try Again"}
+                    </button>
+                    
+                    {depositStatus === "success" && (
+                        <a 
+                            href={`https://scan.testnet.initia.xyz/tx/${lastTxHash}`} 
+                            target="_blank" 
+                            className="block text-center text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
+                        >
+                            View Transaction on InitiaScan <ExternalLink size={10} className="inline ml-1" />
+                        </a>
+                    )}
+
+                    {errorMsg && (
+                        <p className="text-center text-[10px] font-black text-red-500 uppercase tracking-widest italic">{errorMsg}</p>
+                    )}
+                  </div>
                 ) : (
                   <button onClick={() => connect()} className="w-full bg-primary py-6 rounded-sm font-black uppercase italic text-sm tracking-[0.2em] shadow-[0_0_30px_rgba(173,70,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
                       <Wallet size={18} /> Connect Wallet to Deposit
                   </button>
                 )}
-
-                <div className="pt-4 border-t border-white/5 space-y-3">
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span className="text-white/40">Fees APR</span>
-                        <span className="text-[#0B7B5E] tabular-nums">{weightedPool?.feeAPR.toFixed(1) || "12.4"}%</span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span className="text-white/40">Incentives APR</span>
-                        <span className="text-primary tabular-nums">{weightedPool?.emissionAPR.toFixed(1) || "157.0"}%</span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span className="text-white/40">Price Per Share</span>
-                        <span className="text-white tabular-nums">${parseFloat(stats.pricePerShare).toFixed(4)}</span>
-                    </div>
-                </div>
             </div>
 
             {/* Token Roadmap Card */}
@@ -268,13 +312,6 @@ export default function AppPage() {
                             Join_Waitlist
                         </button>
                     </div>
-
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic text-center md:text-left">
-                        * Early depositors get priority allocation in the genesis event.
-                    </p>
-                </div>
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-                    <Zap size={200} className="text-primary fill-current" />
                 </div>
             </div>
         </div>
@@ -310,7 +347,7 @@ export default function AppPage() {
                             <LiveBadge />
                         </div>
                         <div className="text-5xl font-mono font-black italic text-white tracking-tighter tabular-nums">
-                            ${liveValue.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                            ${parseFloat(position.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
                             <TrendingUp size={12} />

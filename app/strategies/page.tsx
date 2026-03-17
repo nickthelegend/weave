@@ -50,7 +50,7 @@ export default function StrategiesPage() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white text-glow">Yield Strategies</h1>
+          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">Yield Strategies</h1>
           <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] italic">Protocol-Managed Liquidity Allocation</p>
         </div>
         

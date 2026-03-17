@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useState, useEffect, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { 
   ArrowDownCircle, 
   ChevronDown, 
@@ -18,27 +18,28 @@ import {
   Loader2,
   ExternalLink,
   ChevronRight
-} from "lucide-react";
-import Link from "next/link";
-import { useWeaveWallet } from "@/app/hooks/useWeaveWallet";
-import { usePoolData } from "@/app/hooks/usePoolData";
-import { useVault } from "@/app/hooks/useVault";
-import { LiveBadge } from "@/app/components/LiveBadge";
+} from "lucide-react"
+import Link from "next/link"
+import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
+import { usePoolData } from "@/app/hooks/usePoolData"
+import { useVault } from "@/app/hooks/useVault"
+import { LiveBadge } from "@/app/components/LiveBadge"
 
 export default function AppPage() {
-  const [amount, setAmount] = useState("");
-  const [token, setToken] = useState("USDC");
-  const [withdrawShares, setWithdrawShares] = useState("");
-  const [showBanner, setShowBanner] = useState(false);
-  const [depositStatus, setDepositStatus] = useState<"idle"|"approving"|"depositing"|"success"|"error">("idle");
-  const [lastTxHash, setLastTxHash] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [amount, setAmount] = useState("")
+  const [token, setToken] = useState("USDC")
+  const [withdrawShares, setWithdrawShares] = useState("")
+  const [showBanner, setShowBanner] = useState(false)
+  const [depositStatus, setDepositStatus] = useState<"idle"|"approving"|"depositing"|"success"|"error">("idle")
+  const [lastTxHash, setLastTxHash] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
   const { isConnected, connect, address, balances, isFetching } = useWeaveWallet();
   const { weightedPool, error: poolError } = usePoolData();
   const { deposit, withdraw, position, stats, getUSDCBalance, loading: positionLoading } = useVault();
   
   const harvestHistory = useQuery(api.functions.getHarvestHistory, { limit: 5 }) || [];
+
   const apr = weightedPool?.totalAPR || 169.4;
 
   // Banner Logic
@@ -81,6 +82,30 @@ export default function AppPage() {
         }
     }
   };
+
+  const handleWithdraw = async () => {
+    if (!withdrawShares || parseFloat(withdrawShares) <= 0) return;
+    try {
+        await withdraw(withdrawShares);
+        setWithdrawShares("");
+    } catch (e) {
+        console.error(e);
+    }
+  };
+
+  // Real-time yield ticker math
+  const [liveValue, setLiveValue] = useState(0);
+  useEffect(() => {
+    if (position && parseFloat(position.shares) > 0) {
+        const interval = setInterval(() => {
+            // In a real scenario, yield grows by PPS. Here we simulate continuous compounding.
+            const pps = parseFloat(position.pricePerShare);
+            const shares = parseFloat(position.shares);
+            setLiveValue(shares * pps);
+        }, 1000);
+        return () => clearInterval(interval);
+    }
+  }, [position]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
@@ -223,7 +248,7 @@ export default function AppPage() {
         <div className="lg:col-span-5 space-y-8">
             <div className="terminal-card bg-[#0A0A0A] p-8 space-y-8">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                    <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-white/80">
                         <Lock size={20} className="text-white/40" />
                         My Position
                     </h2>
@@ -244,7 +269,10 @@ export default function AppPage() {
                 ) : (
                   <div className="space-y-6">
                     <div className="space-y-2">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Value</p>
+                        <div className="flex justify-between items-center">
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Current Value</p>
+                            <LiveBadge />
+                        </div>
                         <div className="text-5xl font-mono font-black italic text-white tracking-tighter tabular-nums">
                             ${position.valueUSD}
                         </div>
@@ -267,8 +295,8 @@ export default function AppPage() {
                                 />
                             </div>
                             <button 
-                                onClick={() => withdraw(withdrawShares)}
-                                className="w-full bg-white text-black py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all"
+                                onClick={handleWithdraw}
+                                className="w-full bg-white text-black px-8 py-4 rounded-sm font-black uppercase italic text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all"
                             >
                                 Execute Withdrawal_
                             </button>

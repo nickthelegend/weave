@@ -1,8 +1,9 @@
 "use client";
 
 import { useChain } from "@cosmos-kit/react";
-import { useState, useEffect, useCallback } from "react";
-import BigNumber from "bignumber.js";
+import { useMemo } from "react";
+import { createWalletClient, custom, Address } from "viem";
+import { initiaTestnet } from "@/lib/contractConfig";
 
 export function useWeaveWallet(chainName: string = "initiatestnet") {
   const {
@@ -13,39 +14,17 @@ export function useWeaveWallet(chainName: string = "initiatestnet") {
     openView,
   } = useChain(chainName);
 
-  const [balances, setBalances] = useState({ usdc: "0.00", init: "0.00" });
-  const [isFetching, setIsFetching] = useState(false);
+  // Added getWalletClient helper for viem
+  const getWalletClient = async () => {
+    if (!window.ethereum) throw new Error("No ethereum provider found");
+    return createWalletClient({
+      account: address as Address,
+      chain: initiaTestnet as any,
+      transport: custom((window as any).ethereum),
+    });
+  };
 
-  const fetchBalances = useCallback(async () => {
-    if (!address) return;
-    setIsFetching(true);
-    try {
-      const restEndpoint = chainName === "initia" ? "https://lcd.initia.xyz" : "https://lcd-testnet.initia.xyz";
-      const response = await fetch(`${restEndpoint}/cosmos/bank/v1beta1/balances/${address}`);
-      const data = await response.json();
-      
-      const balanceList = data.balances || [];
-      const initBal = balanceList.find((b: any) => b.denom === "uinit");
-      const usdcBal = balanceList.find((b: any) => b.denom === "uusdc" || b.denom.includes("usdc"));
-
-      setBalances({
-        init: initBal ? new BigNumber(initBal.amount).dividedBy(10**6).toFixed(2) : "0.00",
-        usdc: usdcBal ? new BigNumber(usdcBal.amount).dividedBy(10**6).toFixed(2) : "0.00",
-      });
-    } catch (error) {
-      console.error("Error fetching balances:", error);
-    } finally {
-      setIsFetching(false);
-    }
-  }, [address, chainName]);
-
-  useEffect(() => {
-    if (address) {
-      fetchBalances();
-      const interval = setInterval(fetchBalances, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [address, fetchBalances]);
+  const balances = { usdc: "0.00", init: "0.00" }; // Placeholder, kept for interface compatibility
 
   return {
     address,
@@ -55,7 +34,6 @@ export function useWeaveWallet(chainName: string = "initiatestnet") {
     connect,
     disconnect,
     openView,
-    fetchBalances,
-    isFetching,
+    getWalletClient,
   };
 }

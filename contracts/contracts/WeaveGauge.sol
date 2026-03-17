@@ -16,6 +16,7 @@ contract WeaveGauge is Ownable {
         string name;
         address strategy;
         uint256 totalVotes;
+        uint256 allocation; // % of capital (basis points, 10000 = 100%)
     }
 
     IVeWeave public immutable veWeave;
@@ -25,10 +26,10 @@ contract WeaveGauge is Ownable {
     uint256 public constant EPOCH_DURATION = 7 days;
 
     mapping(address => mapping(uint256 => uint256)) public userVotes; // user -> gaugeId -> votes
-    mapping(address => uint256) public userTotalVotes; // Total votes cast by user in current epoch
 
     event GaugeAdded(string name, address strategy);
     event Voted(address indexed user, uint256 gaugeId, uint256 amount);
+    event EpochFinalized(uint256[] allocations);
 
     constructor(address _veWeave) Ownable(msg.sender) {
         veWeave = IVeWeave(_veWeave);
@@ -39,32 +40,47 @@ contract WeaveGauge is Ownable {
         gauges.push(Gauge({
             name: name,
             strategy: strategy,
-            totalVotes: 0
+            totalVotes: 0,
+            allocation: 0
         }));
         emit GaugeAdded(name, strategy);
     }
 
-    function vote(uint256 gaugeId, uint256 weightBasisPoints) external {
+    function vote(uint256 gaugeId, uint256 veAmount) external {
         require(gaugeId < gauges.length, "Invalid gauge");
-        require(weightBasisPoints <= 10000, "Max 100%");
+        uint256 power = veWeave.getVotingPower(msg.sender);
+        require(power >= veAmount, "Insufficient voting power");
+
+        // Subtract previous vote from user and gauge
+        gauges[gaugeId].totalVotes -= userVotes[msg.sender][gaugeId];
         
-        // Reset epoch if needed
-        if (block.timestamp > epochEnd) {
-            epochEnd = block.timestamp + EPOCH_DURATION;
-            // Note: In a production gauge, we would handle vote resets or snapshots here.
+        userVotes[msg.sender][gaugeId] = veAmount;
+        gauges[gaugeId].totalVotes += veAmount;
+
+        emit Voted(msg.sender, gaugeId, veAmount);
+    }
+
+    function finalizeEpoch() external {
+        require(block.timestamp >= epochEnd, "Epoch not ended");
+        
+        uint256 totalVotes = 0;
+        for (uint256 i = 0; i < gauges.length; i++) {
+            totalVotes += gauges[i].totalVotes;
         }
 
-        uint256 power = veWeave.getVotingPower(msg.sender);
-        require(power > 0, "No voting power");
+        uint256[] memory newAllocations = new uint256[](gauges.length);
+        if (totalVotes > 0) {
+            for (uint256 i = 0; i < gauges.length; i++) {
+                uint256 alloc = (gauges[i].totalVotes * 10000) / totalVotes;
+                gauges[i].allocation = alloc;
+                newAllocations[i] = alloc;
+                // Reset votes for next epoch
+                gauges[i].totalVotes = 0;
+            }
+        }
 
-        uint256 votesToCast = (power * weightBasisPoints) / 10000;
-        
-        // Basic voting logic: overwrite previous vote for simplicity in hackathon
-        gauges[gaugeId].totalVotes -= userVotes[msg.sender][gaugeId];
-        userVotes[msg.sender][gaugeId] = votesToCast;
-        gauges[gaugeId].totalVotes += votesToCast;
-
-        emit Voted(msg.sender, gaugeId, votesToCast);
+        epochEnd = block.timestamp + EPOCH_DURATION;
+        emit EpochFinalized(newAllocations);
     }
 
     function getGaugeCount() external view returns (uint256) {

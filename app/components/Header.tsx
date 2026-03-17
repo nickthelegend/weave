@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, LayoutDashboard, Layers, Wallet, ChevronDown, Copy, ExternalLink, LogOut, Droplets } from "lucide-react";
+import { Zap, LayoutDashboard, Layers, Wallet, ChevronDown, Copy, ExternalLink, LogOut, Droplets, Gavel } from "lucide-react";
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,12 +40,15 @@ export function Header() {
           <div className="w-8 h-8 bg-primary flex items-center justify-center rounded-sm rotate-45 group-hover:rotate-90 transition-transform duration-500 shadow-[0_0_15px_rgba(173,70,255,0.5)]">
             <Zap size={18} className="-rotate-45 group-hover:-rotate-90 transition-transform duration-500 text-white fill-current" />
           </div>
-          <span className="text-xl font-bold tracking-tighter uppercase italic">Weave</span>
+          <span className="text-xl font-bold tracking-tighter uppercase italic text-glow">Weave</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <Link href="/app" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
             <LayoutDashboard size={14} /> Terminal
+          </Link>
+          <Link href="/governance" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
+            <Gavel size={14} /> Governance
           </Link>
           <Link href="/strategies" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
             <Layers size={14} /> Strategies

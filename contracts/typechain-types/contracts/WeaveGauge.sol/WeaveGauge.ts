@@ -28,13 +28,20 @@ export declare namespace WeaveGauge {
     name: string;
     strategy: AddressLike;
     totalVotes: BigNumberish;
+    allocation: BigNumberish;
   };
 
   export type GaugeStructOutput = [
     name: string,
     strategy: string,
-    totalVotes: bigint
-  ] & { name: string; strategy: string; totalVotes: bigint };
+    totalVotes: bigint,
+    allocation: bigint
+  ] & {
+    name: string;
+    strategy: string;
+    totalVotes: bigint;
+    allocation: bigint;
+  };
 }
 
 export interface WeaveGaugeInterface extends Interface {
@@ -43,20 +50,24 @@ export interface WeaveGaugeInterface extends Interface {
       | "EPOCH_DURATION"
       | "addGauge"
       | "epochEnd"
+      | "finalizeEpoch"
       | "gauges"
       | "getGauge"
       | "getGaugeCount"
       | "owner"
       | "renounceOwnership"
       | "transferOwnership"
-      | "userTotalVotes"
       | "userVotes"
       | "veWeave"
       | "vote"
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "GaugeAdded" | "OwnershipTransferred" | "Voted"
+    nameOrSignatureOrTopic:
+      | "EpochFinalized"
+      | "GaugeAdded"
+      | "OwnershipTransferred"
+      | "Voted"
   ): EventFragment;
 
   encodeFunctionData(
@@ -68,6 +79,10 @@ export interface WeaveGaugeInterface extends Interface {
     values: [string, AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "epochEnd", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "finalizeEpoch",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "gauges",
     values: [BigNumberish]
@@ -90,10 +105,6 @@ export interface WeaveGaugeInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "userTotalVotes",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "userVotes",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -109,6 +120,10 @@ export interface WeaveGaugeInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "addGauge", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "epochEnd", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "finalizeEpoch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "gauges", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getGauge", data: BytesLike): Result;
   decodeFunctionResult(
@@ -124,13 +139,21 @@ export interface WeaveGaugeInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "userTotalVotes",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "userVotes", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "veWeave", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
+}
+
+export namespace EpochFinalizedEvent {
+  export type InputTuple = [allocations: BigNumberish[]];
+  export type OutputTuple = [allocations: bigint[]];
+  export interface OutputObject {
+    allocations: bigint[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace GaugeAddedEvent {
@@ -230,13 +253,16 @@ export interface WeaveGauge extends BaseContract {
 
   epochEnd: TypedContractMethod<[], [bigint], "view">;
 
+  finalizeEpoch: TypedContractMethod<[], [void], "nonpayable">;
+
   gauges: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, bigint] & {
+      [string, string, bigint, bigint] & {
         name: string;
         strategy: string;
         totalVotes: bigint;
+        allocation: bigint;
       }
     ],
     "view"
@@ -260,8 +286,6 @@ export interface WeaveGauge extends BaseContract {
     "nonpayable"
   >;
 
-  userTotalVotes: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
-
   userVotes: TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
     [bigint],
@@ -271,7 +295,7 @@ export interface WeaveGauge extends BaseContract {
   veWeave: TypedContractMethod<[], [string], "view">;
 
   vote: TypedContractMethod<
-    [gaugeId: BigNumberish, weightBasisPoints: BigNumberish],
+    [gaugeId: BigNumberish, veAmount: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -294,14 +318,18 @@ export interface WeaveGauge extends BaseContract {
     nameOrSignature: "epochEnd"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "finalizeEpoch"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "gauges"
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, bigint] & {
+      [string, string, bigint, bigint] & {
         name: string;
         strategy: string;
         totalVotes: bigint;
+        allocation: bigint;
       }
     ],
     "view"
@@ -326,9 +354,6 @@ export interface WeaveGauge extends BaseContract {
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "userTotalVotes"
-  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
-  getFunction(
     nameOrSignature: "userVotes"
   ): TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
@@ -341,11 +366,18 @@ export interface WeaveGauge extends BaseContract {
   getFunction(
     nameOrSignature: "vote"
   ): TypedContractMethod<
-    [gaugeId: BigNumberish, weightBasisPoints: BigNumberish],
+    [gaugeId: BigNumberish, veAmount: BigNumberish],
     [void],
     "nonpayable"
   >;
 
+  getEvent(
+    key: "EpochFinalized"
+  ): TypedContractEvent<
+    EpochFinalizedEvent.InputTuple,
+    EpochFinalizedEvent.OutputTuple,
+    EpochFinalizedEvent.OutputObject
+  >;
   getEvent(
     key: "GaugeAdded"
   ): TypedContractEvent<
@@ -369,6 +401,17 @@ export interface WeaveGauge extends BaseContract {
   >;
 
   filters: {
+    "EpochFinalized(uint256[])": TypedContractEvent<
+      EpochFinalizedEvent.InputTuple,
+      EpochFinalizedEvent.OutputTuple,
+      EpochFinalizedEvent.OutputObject
+    >;
+    EpochFinalized: TypedContractEvent<
+      EpochFinalizedEvent.InputTuple,
+      EpochFinalizedEvent.OutputTuple,
+      EpochFinalizedEvent.OutputObject
+    >;
+
     "GaugeAdded(string,address)": TypedContractEvent<
       GaugeAddedEvent.InputTuple,
       GaugeAddedEvent.OutputTuple,

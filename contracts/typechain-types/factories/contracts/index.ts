@@ -3,8 +3,9 @@
 /* eslint-disable */
 export * as weaveGaugeSol from "./WeaveGauge.sol";
 export * as weaveRewardsSol from "./WeaveRewards.sol";
+export * as weaveVaultSol from "./WeaveVault.sol";
 export * as weaveZapInSol from "./WeaveZapIn.sol";
 export { MockERC20__factory } from "./MockERC20__factory";
 export { VeWeave__factory } from "./VeWeave__factory";
 export { WeaveToken__factory } from "./WeaveToken__factory";
-export { WeaveVault__factory } from "./WeaveVault__factory";
+export { WeaveVesting__factory } from "./WeaveVesting__factory";

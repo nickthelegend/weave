@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
+interface IWeaveRewards {
+    function distributeRewards(uint256 usdcAmount) external;
+}
+
 /**
  * @title WeaveVault
  * @dev Main vault for Weave - aggregates yield on Initia.
@@ -23,7 +27,7 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
 
     address public keeper;
     uint256 public protocolFee = 1000; // 10% in basis points
-    address public feeRecipient;
+    address public feeRecipient; // future WEAVE staking contract (WeaveRewards)
     uint256 public totalProtocolFeesAccrued;
     uint256 public totalYieldGenerated;
 
@@ -32,6 +36,7 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     event Harvested(uint256 netYield, uint256 fee, uint256 timestamp);
     event KeeperUpdated(address indexed keeper);
     event FeeRecipientUpdated(address indexed recipient);
+    event FeeSent(uint256 amount);
 
     modifier onlyKeeper() {
         require(msg.sender == keeper || msg.sender == owner(), "Not keeper");
@@ -59,7 +64,7 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         emit FeeRecipientUpdated(_recipient);
     }
 
-    function deposit(uint256 amount) external nonReentrant whenNotPaused {
+    function deposit(uint256 amount) external {
         _depositFor(msg.sender, amount);
     }
 
@@ -109,6 +114,16 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         totalDeposited += netYield;
         totalProtocolFeesAccrued += fee;
         totalYieldGenerated += yieldAmount;
+
+        // V2: Send fees to WeaveRewards
+        if (feeRecipient != address(0) && fee > 0) {
+            depositToken.safeIncreaseAllowance(feeRecipient, fee);
+            try IWeaveRewards(feeRecipient).distributeRewards(fee) {
+                emit FeeSent(fee);
+            } catch {
+                // If call fails, keep fees in vault for future recovery
+            }
+        }
 
         emit Harvested(netYield, fee, block.timestamp);
     }

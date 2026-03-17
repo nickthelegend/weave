@@ -455,8 +455,8 @@
       ]
     },
     "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveVault.sol": {
-      "lastModificationDate": 1773695350176,
-      "contentHash": "e4281f20cec945e5b8d49232bc56ae30",
+      "lastModificationDate": 1773720730005,
+      "contentHash": "08284ae74efb604af4e4dc7410478907",
       "sourceName": "contracts/WeaveVault.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -493,6 +493,7 @@
         "^0.8.20"
       ],
       "artifacts": [
+        "IWeaveRewards",
         "WeaveVault"
       ]
     },
@@ -768,8 +769,8 @@
       ]
     },
     "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveGauge.sol": {
-      "lastModificationDate": 1773720624535,
-      "contentHash": "b7fce22e85c52e9aa07ec7a856daf6e6",
+      "lastModificationDate": 1773720749355,
+      "contentHash": "e04562698057ac79483afdf7d12cb4bb",
       "sourceName": "contracts/WeaveGauge.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -804,6 +805,46 @@
       "artifacts": [
         "IVeWeave",
         "WeaveGauge"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveVesting.sol": {
+      "lastModificationDate": 1773720708537,
+      "contentHash": "407c8f85ede668fb324652ccad3c5ff3",
+      "sourceName": "contracts/WeaveVesting.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "WeaveVesting"
       ]
     }
   }

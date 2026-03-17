@@ -1,61 +1,89 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-@theme {
-  --font-sans: 'DM Sans Variable', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  
-  --color-background: #000000;
-  --color-foreground: #ffffff;
-  --color-primary: #ad46ff;
-  --color-secondary: #111111;
-  --color-border-accent: rgba(173, 70, 255, 0.2);
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #0A0A0A;
+  --card-foreground: #ffffff;
+  --popover: #0A0A0A;
+  --popover-foreground: #ffffff;
+  --primary: #ad46ff;
+  --primary-foreground: #ffffff;
+  --secondary: #111111;
+  --secondary-foreground: #ffffff;
+  --muted: #8892A4;
+  --muted-foreground: #8892A4;
+  --accent: #ad46ff;
+  --accent-foreground: #ffffff;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(173, 70, 255, 0.1);
+  --input: #111111;
+  --ring: #ad46ff;
+  --radius: 0.25rem;
+}
+
+@theme inline {
+  --font-display: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 @layer base {
-  :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --primary: 270 100% 64%;
-    --secondary: 0 0% 7%;
-    --border: 270 100% 64% / 0.2;
+  * {
+    @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-black text-white antialiased overflow-x-hidden;
-    font-feature-settings: "ss01", "ss03", "cv08", "cv11";
+    @apply bg-black text-white font-display antialiased selection:bg-primary/30;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black italic uppercase tracking-tighter;
   }
 }
 
-@layer components {
-  .terminal-border {
-    @apply border border-border-accent;
-  }
-  
-  .terminal-card {
-    @apply bg-[#111111] border border-border-accent rounded-sm transition-all duration-300;
-  }
-  
-  .terminal-glow {
-    @apply shadow-[0_0_15px_rgba(173,70,255,0.15)];
-  }
-
-  .glow-active {
-    @apply shadow-[0_0_20px_rgba(173,70,255,0.3)] border-primary/40;
-  }
-
-  .grid-texture {
-    background-image: linear-gradient(rgba(173, 70, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(173, 70, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
+.terminal-card {
+  @apply bg-[#0A0A0A] border border-white/5 rounded-sm transition-all duration-300;
 }
 
-/* Custom Wallet Modal Styling */
-.weave-wallet-modal {
-  --interchain-ui-colors-modal-background: #000000 !important;
-  --interchain-ui-colors-modal-border: rgba(173, 70, 255, 0.3) !important;
-  --interchain-ui-colors-text-primary: #ffffff !important;
-  --interchain-ui-colors-primary: #ad46ff !important;
+.terminal-card:hover {
+  @apply border-primary/30 shadow-[0_0_20px_rgba(173,70,255,0.1)];
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(173, 70, 255, 0.5);
+}
+
+.glow-primary {
+  @apply shadow-[0_0_30px_rgba(173,70,255,0.2)];
+}
+
+.grid-texture {
+  background-image: linear-gradient(rgba(173, 70, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(173, 70, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 .scanline {
@@ -67,6 +95,7 @@
   left: 0;
   pointer-events: none;
   animation: scan 8s linear infinite;
+  z-index: 100;
 }
 
 @keyframes scan {
@@ -74,11 +103,6 @@
   to { top: 100%; }
 }
 
-.pulse-purple {
-  animation: pulse-p 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-p {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .7; transform: scale(1.05); }
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

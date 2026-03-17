@@ -1,11 +1,11 @@
 import { createPublicClient, http } from "viem"
 
-export const initiaTestnet = {
-  id: 1515,
-  name: "Initia Testnet",
-  nativeCurrency: { name: "INIT", symbol: "INIT", decimals: 18 },
+export const minievm = {
+  id: 4303131403034904,
+  name: "Minievm",
+  nativeCurrency: { name: "GAS", symbol: "GAS", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://json-rpc.testnet.initia.xyz"] }
+    default: { http: ["https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz"] }
   },
   blockExplorers: {
     default: { name: "InitiaScan", url: "https://scan.testnet.initia.xyz" }
@@ -13,7 +13,7 @@ export const initiaTestnet = {
 }
 
 export const publicClient = createPublicClient({
-  chain: initiaTestnet,
+  chain: minievm as any,
   transport: http()
 })
 

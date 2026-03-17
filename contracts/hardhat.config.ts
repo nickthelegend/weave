@@ -18,8 +18,14 @@ const config: HardhatUserConfig = {
   },
   networks: {
     initiaTestnet: {
-      url: "https://json-rpc.testnet.initia.xyz",
+      url: "https://rpc.testnet.initia.xyz",
       chainId: 1515,
+      accounts: [PRIVATE_KEY],
+      gasPrice: 1500000000,
+    },
+    minievm: {
+      url: "https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz",
+      chainId: 2124225178762456,
       accounts: [PRIVATE_KEY],
       gasPrice: 1500000000,
     },

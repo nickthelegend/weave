@@ -14,11 +14,11 @@ async function main() {
   // Connectivity & Balance Check
   const network = await ethers.provider.getNetwork();
   console.log("Connected to chainId:", network.chainId.toString());
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("Deployer balance:", ethers.formatEther(balance), "INIT");
 
-  if (balance === 0n) {
+  if (balance === BigInt(0)) {
     console.error("❌ ERROR: Deployer has no INIT — get testnet tokens from https://faucet.testnet.initia.xyz");
     process.exit(1);
   }

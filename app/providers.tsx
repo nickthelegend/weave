@@ -6,7 +6,7 @@ import { mainnet } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { connectorsForWallets, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { initiaPrivyWallet, injectStyles, InterwovenKitProvider } from "@initia/interwovenkit-react";
+import { initiaPrivyWallet, injectStyles, InterwovenKitProvider, TESTNET } from "@initia/interwovenkit-react";
 // @ts-ignore
 import interwovenKitStyles from "@initia/interwovenkit-react/styles.js";
 import { ThemeProvider } from "next-themes";
@@ -25,23 +25,22 @@ const connectors = connectorsForWallets(
 );
 
 // Define Initia Testnet L1 EVM
-const initiaTestnet = {
-  id: 1515,
-  name: "Initia Testnet",
-  nativeCurrency: { name: "INIT", symbol: "INIT", decimals: 18 },
+const minievm = {
+  id: 4303131403034904,
+  name: 'Minievm',
+  nativeCurrency: { name: 'GAS', symbol: 'GAS', decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://json-rpc.testnet.initia.xyz"] },
-  },
-  blockExplorers: {
-    default: { name: "InitiaScan", url: "https://scan.testnet.initia.xyz" },
+    default: {
+      http: ['https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz'],
+    },
   },
 };
 
 const wagmiConfig = createConfig({
   connectors,
-  chains: [initiaTestnet as any, mainnet],
+  chains: [minievm as any, mainnet],
   transports: {
-    [initiaTestnet.id]: http(),
+    [minievm.id]: http(),
     [mainnet.id]: http(),
   },
 });
@@ -61,7 +60,7 @@ export function Providers({ children }: PropsWithChildren) {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
           <RainbowKitProvider theme={darkTheme()}>
-            <InterwovenKitProvider defaultChainId="initiation-2">
+            <InterwovenKitProvider {...TESTNET} defaultChainId="minievm-2">
               {children}
             </InterwovenKitProvider>
           </RainbowKitProvider>

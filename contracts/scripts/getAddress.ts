@@ -26,8 +26,8 @@ async function main() {
   }
 
   const [deployer] = await ethers.getSigners();
-  
-  let balance = 0n;
+
+  let balance = BigInt(0);
   try {
     balance = await ethers.provider.getBalance(deployer.address);
   } catch (e) {
@@ -44,7 +44,7 @@ async function main() {
   console.log("INIT Balance:", ethers.formatEther(balance), "INIT");
   console.log("");
 
-  if (balance === 0n) {
+  if (balance === BigInt(0)) {
     console.log("⚠️ NEEDS FUNDING");
     console.log("");
     console.log("Go to this URL and paste your address:");

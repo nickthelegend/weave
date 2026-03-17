@@ -2,7 +2,7 @@
 
 import { useInterwovenKit } from "@initia/interwovenkit-react";
 import { createWalletClient, custom, Address } from "viem";
-import { initiaTestnet } from "@/lib/contractConfig";
+import { minievm } from "@/lib/contractConfig";
 
 export function useWeaveWallet() {
   const {
@@ -24,7 +24,7 @@ export function useWeaveWallet() {
     }
     return createWalletClient({
       account: hexAddress as Address,
-      chain: initiaTestnet as any,
+      chain: minievm as any,
       transport: custom(ethereum),
     });
   };

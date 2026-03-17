@@ -1,6 +1,8 @@
 "use client";
 
-import { Providers } from "./providers";
+import dynamic from 'next/dynamic';
+
+const Providers = dynamic(() => import('./providers').then(mod => mod.Providers), { ssr: false });
 
 export default function RootLayoutWrapper({
   children,

@@ -32,6 +32,16 @@ export type { ReentrancyGuard } from "./@openzeppelin/contracts/utils/Reentrancy
 export { ReentrancyGuard__factory } from "./factories/@openzeppelin/contracts/utils/ReentrancyGuard__factory";
 export type { MockERC20 } from "./contracts/MockERC20";
 export { MockERC20__factory } from "./factories/contracts/MockERC20__factory";
+export type { VeWeave } from "./contracts/VeWeave";
+export { VeWeave__factory } from "./factories/contracts/VeWeave__factory";
+export type { IVeWeave } from "./contracts/WeaveGauge.sol/IVeWeave";
+export { IVeWeave__factory } from "./factories/contracts/WeaveGauge.sol/IVeWeave__factory";
+export type { WeaveGauge } from "./contracts/WeaveGauge.sol/WeaveGauge";
+export { WeaveGauge__factory } from "./factories/contracts/WeaveGauge.sol/WeaveGauge__factory";
+export type { WeaveRewards } from "./contracts/WeaveRewards.sol/WeaveRewards";
+export { WeaveRewards__factory } from "./factories/contracts/WeaveRewards.sol/WeaveRewards__factory";
+export type { WeaveToken } from "./contracts/WeaveToken";
+export { WeaveToken__factory } from "./factories/contracts/WeaveToken__factory";
 export type { WeaveVault } from "./contracts/WeaveVault";
 export { WeaveVault__factory } from "./factories/contracts/WeaveVault__factory";
 export type { IWeaveVault } from "./contracts/WeaveZapIn.sol/IWeaveVault";

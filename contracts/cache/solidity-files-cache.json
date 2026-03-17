@@ -645,6 +645,166 @@
       "artifacts": [
         "StorageSlot"
       ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveToken.sol": {
+      "lastModificationDate": 1773720589911,
+      "contentHash": "761cd08c626bbd210cb839c475b9161a",
+      "sourceName": "contracts/WeaveToken.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "WeaveToken"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveRewards.sol": {
+      "lastModificationDate": 1773720613703,
+      "contentHash": "07797eba533e4a71c07a594526955c03",
+      "sourceName": "contracts/WeaveRewards.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IVeWeave",
+        "WeaveRewards"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/VeWeave.sol": {
+      "lastModificationDate": 1773720602511,
+      "contentHash": "14c412576ac280eb4c8c2992d0de49f5",
+      "sourceName": "contracts/VeWeave.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "VeWeave"
+      ]
+    },
+    "/Users/jaibajrang/Desktop/Projects/initia/weave/contracts/contracts/WeaveGauge.sol": {
+      "lastModificationDate": 1773720624535,
+      "contentHash": "b7fce22e85c52e9aa07ec7a856daf6e6",
+      "sourceName": "contracts/WeaveGauge.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IVeWeave",
+        "WeaveGauge"
+      ]
     }
   }
 }

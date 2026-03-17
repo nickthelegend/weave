@@ -66,6 +66,30 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockERC20__factory>;
     getContractFactory(
+      name: "VeWeave",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VeWeave__factory>;
+    getContractFactory(
+      name: "IVeWeave",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVeWeave__factory>;
+    getContractFactory(
+      name: "WeaveGauge",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WeaveGauge__factory>;
+    getContractFactory(
+      name: "IVeWeave",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVeWeave__factory>;
+    getContractFactory(
+      name: "WeaveRewards",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WeaveRewards__factory>;
+    getContractFactory(
+      name: "WeaveToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WeaveToken__factory>;
+    getContractFactory(
       name: "WeaveVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WeaveVault__factory>;
@@ -144,6 +168,36 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.MockERC20>;
     getContractAt(
+      name: "VeWeave",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VeWeave>;
+    getContractAt(
+      name: "IVeWeave",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVeWeave>;
+    getContractAt(
+      name: "WeaveGauge",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WeaveGauge>;
+    getContractAt(
+      name: "IVeWeave",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVeWeave>;
+    getContractAt(
+      name: "WeaveRewards",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WeaveRewards>;
+    getContractAt(
+      name: "WeaveToken",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WeaveToken>;
+    getContractAt(
       name: "WeaveVault",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -212,6 +266,30 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC20>;
     deployContract(
+      name: "VeWeave",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VeWeave>;
+    deployContract(
+      name: "IVeWeave",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVeWeave>;
+    deployContract(
+      name: "WeaveGauge",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveGauge>;
+    deployContract(
+      name: "IVeWeave",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVeWeave>;
+    deployContract(
+      name: "WeaveRewards",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveRewards>;
+    deployContract(
+      name: "WeaveToken",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveToken>;
+    deployContract(
       name: "WeaveVault",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveVault>;
@@ -289,6 +367,36 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC20>;
+    deployContract(
+      name: "VeWeave",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VeWeave>;
+    deployContract(
+      name: "IVeWeave",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVeWeave>;
+    deployContract(
+      name: "WeaveGauge",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveGauge>;
+    deployContract(
+      name: "IVeWeave",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVeWeave>;
+    deployContract(
+      name: "WeaveRewards",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveRewards>;
+    deployContract(
+      name: "WeaveToken",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WeaveToken>;
     deployContract(
       name: "WeaveVault",
       args: any[],

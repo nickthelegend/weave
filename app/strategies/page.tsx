@@ -20,6 +20,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { useVault } from "@/app/hooks/useVault"
+import { MinitiaVaultCard } from "@/app/components/MinitiaVaultCard";
 
 export default function StrategiesPage() {
   const pools = useQuery(api.functions.getLatestPools) || [];
@@ -36,8 +37,8 @@ export default function StrategiesPage() {
   ];
 
   const crossMinitiaVaults = [
-    { name: "Blackwing", tvl: "$0", apy: "~45%", status: "Coming Soon", risk: "Medium" },
-    { name: "Tucana", tvl: "$0", apy: "~38%", status: "Coming Soon", risk: "High" },
+    { name: "Blackwing", apy: "~45.2%", risk: "Medium" as const, status: "soon" as const, description: "Delta-neutral margin protocol yields optimized for Initia liquidity." },
+    { name: "Tucana", apy: "~38.1%", risk: "High" as const, status: "soon" as const, description: "Perpetual funding rate capture across cross-chain markets." },
   ];
 
   if (pools.length === 0) {
@@ -71,7 +72,7 @@ export default function StrategiesPage() {
                         <LiveBadge />
                     </div>
                     <p className="text-xl font-mono font-black italic text-white tabular-nums">
-                        ${parseFloat(stats.totalDeposited).toLocaleString()}
+                        ${parseFloat(position.totalDeposited).toLocaleString()}
                     </p>
                 </div>
             </div>
@@ -149,45 +150,12 @@ export default function StrategiesPage() {
       <div className="space-y-8">
         <div className="flex items-center gap-3 px-2">
             <h2 className="text-xs font-black text-white/30 uppercase tracking-[0.4em] italic">Cross-Minitia Vaults</h2>
-            <div className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">V3 Beta</div>
+            <div className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-widest">V3 Beta</div>
         </div>
-        <div className="terminal-card bg-black/50 overflow-hidden border-dashed">
-            <table className="w-full text-left">
-                <thead>
-                    <tr className="border-b border-white/5 text-[9px] font-black text-white/20 uppercase italic">
-                        <th className="p-6">Minitia Network</th>
-                        <th className="p-6">Projected APY</th>
-                        <th className="p-6">Current TVL</th>
-                        <th className="p-6">Governance Status</th>
-                        <th className="p-6 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody className="text-[11px] font-bold text-white/60 uppercase tracking-tight">
-                    {crossMinitiaVaults.map((v, i) => (
-                        <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                            <td className="p-6 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-white/20">
-                                    <Globe size={16} />
-                                </div>
-                                <span className="text-white/80">{v.name}</span>
-                            </td>
-                            <td className="p-6 text-primary">{v.apy}</td>
-                            <td className="p-6 font-mono text-white/20">{v.tvl}</td>
-                            <td className="p-6">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse" />
-                                    <span className="text-yellow-500/60 text-[9px]">Pending Governance Vote</span>
-                                </div>
-                            </td>
-                            <td className="p-6 text-right">
-                                <button className="text-[9px] font-black text-white/20 group-hover:text-primary transition-colors flex items-center gap-2 ml-auto">
-                                    Queue Vote <Lock size={10} />
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {crossMinitiaVaults.map((vault, i) => (
+                <MinitiaVaultCard key={i} {...vault} />
+            ))}
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   ArrowDownCircle, 
@@ -18,7 +18,14 @@ import {
   Loader2,
   ExternalLink,
   ChevronRight,
-  Target
+  Target,
+  Gavel,
+  Clock,
+  Coins,
+  ShieldCheck,
+  Percent,
+  CheckCircle2,
+  Globe
 } from "lucide-react"
 import Link from "next/link"
 import { useWeaveWallet } from "@/app/hooks/useWeaveWallet"
@@ -251,10 +258,10 @@ export default function AppPage() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors">WEAVE Token — Q3 2025</h3>
-                            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Institutional Staking Rewards</p>
+                            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Governance & Reward Distribution</p>
                         </div>
                         <div className="bg-primary/10 border border-primary/20 px-6 py-4 rounded-sm flex flex-col items-center">
-                            <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Fees Accrued</p>
+                            <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Fees Accrued</p>
                             <p className="text-xl font-mono font-bold text-[#22c55e] tabular-nums tracking-tighter">${parseFloat(position.totalProtocolFees).toLocaleString()}</p>
                         </div>
                     </div>
@@ -280,7 +287,7 @@ export default function AppPage() {
                     
                     <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
                         <div className="w-full relative">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10" size={16} />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                             <input 
                                 type="email" 
                                 placeholder="Enter address for priority airdrop..."

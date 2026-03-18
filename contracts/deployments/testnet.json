@@ -1,12 +1,12 @@
 {
   "network": "initiaTestnet",
-  "chainId": 2124225178762456,
-  "deployedAt": "2026-03-18T03:43:17.922Z",
+  "chainId": 1072375175819285,
+  "deployedAt": "2026-03-18T05:23:45.349Z",
   "contracts": {
-    "weaveVault": "0x1169AA578e797417F094EdfE0FBcc63406290004",
-    "weaveZapIn": "0xd37703258b4eA570a395bb9fE4994CF482A0E7ae",
-    "mockUSDC": "0x42F27ED4C4ac86bFA0bcA15E429Ae832927Eb180",
-    "mockINIT": "0x22d0fCB978130bd4d992B610C5E6101ed41CC74e"
+    "weaveVault": "0x4e6926f7d551df7b5fD3A32d15CF24248d2d6b51",
+    "weaveZapIn": "0xF5B864938E672A4ce988781E35B2AE2fE8fd99F4",
+    "mockUSDC": "0x7430e4B57944fd49d030D9F52Ec5b473AD1a1474",
+    "mockINIT": "0xE64d685708DFD3A438aDDaa08367488e0C37679b"
   },
   "weaveToken": "NOT_DEPLOYED — planned v2"
 }

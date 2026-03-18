@@ -25,14 +25,14 @@ const connectors = connectorsForWallets(
   }
 );
 
-// Define Initia Testnet L1 EVM (Now pointing to local weave-1)
+// Define local EVM chain for Wagmi (Now pointing to VPS weave-3)
 const minievm = {
-  id: 1610154616031844, // eth_chainId of weave-1
+  id: 1072375175819285, // eth_chainId of weave-3 on VPS
   name: 'Minievm',
   nativeCurrency: { name: 'GAS', symbol: 'GAS', decimals: 18 },
   rpcUrls: {
     default: {
-      http: ['http://localhost:8545'],
+      http: ['http://140.245.243.150:8545'],
     },
   },
 };
@@ -48,20 +48,19 @@ const wagmiConfig = createConfig({
 
 const queryClient = new QueryClient();
 
-// Custom Chain Metadata for your local Weave-1 rollup
-// Aligned with initia-appchain-dev skill standards
+// Skill-mandated local chain metadata
 const weaveLocal: any = {
-  chain_id: "weave-1",
+  chain_id: "weave-3",
   chain_name: "weave",
   bech32_prefix: "init",
-  pretty_name: "Weave Local",
+  pretty_name: "Weave VPS (weave-3)",
   network_type: "testnet", // MANDATORY
   status: "live",
   apis: {
-    rpc: [{ address: "http://localhost:26657" }],
-    rest: [{ address: "http://localhost:1317" }],
-    indexer: [{ address: "http://localhost:1317" }], // Use REST as placeholder to avoid URL not found
-    "json-rpc": [{ address: "http://localhost:8545" }]
+    rpc: [{ address: "http://140.245.243.150:26657" }],
+    rest: [{ address: "http://140.245.243.150:1317" }],
+    indexer: [{ address: "http://140.245.243.150:1317" }], // Use REST as placeholder to avoid URL not found
+    "json-rpc": [{ address: "http://140.245.243.150:8545" }]
   },
   fees: {
     fee_tokens: [{
@@ -112,7 +111,7 @@ export function Providers({ children }: PropsWithChildren) {
                 customChain={weaveLocal}
                 // @ts-ignore
                 customChains={[weaveLocal]}
-                defaultChainId="weave-1"
+                defaultChainId="weave-3"
                 theme="dark"
               >
                 {children}

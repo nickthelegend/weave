@@ -133,64 +133,104 @@ export const updateGlobalStats = mutation({
   },
 });
 
+export const syncHarvestLog = mutation({
+  args: {
+    strategyName: v.string(),
+    amountReinvested: v.number(),
+    apyAtHarvest: v.number(),
+    timestamp: v.number(),
+    txSignatures: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("harvestEvents", args);
+    
+    // Update global stats last harvest time
+    const stats = await ctx.db.query("globalStats").first();
+    if (stats) {
+      await ctx.db.patch(stats._id, { lastHarvestAt: args.timestamp });
+    }
+  },
+});
+
+export const getVIPHistory = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("vipStages").order("desc").collect();
+  },
+});
+
+export const getPrices = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("poolSnapshots").order("desc").take(10);
+  },
+});
+
+// --- Mutations ---
+
+export const saveVIPStage = mutation({
+  args: {
+    stage: v.number(),
+    timestamp: v.number(),
+    depositors: v.number(),
+    totalScore: v.string(),
+    esINITExpected: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("vipStages")
+      .filter((q) => q.eq(q.field("stage"), args.stage))
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, args);
+    } else {
+      await ctx.db.insert("vipStages", args);
+    }
+  },
+});
+
 // --- Actions (for external API syncing) ---
 
-export const syncPoolData = action({
+export const syncHarvestLogs = action({
   handler: async (ctx) => {
-    /** 
-     * In a real production scenario, we'd fetch live data here:
-     * - Echelon markets (USDC/INIT): Query contract methods
-     * - Initia DEX (USDC-INIT, iUSD-USDC): Query LP reserves and emission rates
-     */
-    
-    const vaultData = [
-      {
-        pair: "USDC-INIT LP + Stake",
-        type: "weighted",
-        tvl: 45200000 + Math.random() * 500000,
-        feeAPR: 24.1 + Math.random(),
-        emissionAPR: 138.2 + Math.random(),
-        volume24h: 3400000,
-      },
-      {
-        pair: "iUSD-USDC LP",
-        type: "stable",
-        tvl: 22800000 + Math.random() * 200000,
-        feeAPR: 14.5 + Math.random(),
-        emissionAPR: 0,
-        volume24h: 850000,
-      },
-      {
-        pair: "USDC Lending (Echelon)",
-        type: "lending",
-        tvl: 18400000 + Math.random() * 100000,
-        feeAPR: 8.4 + Math.random(),
-        emissionAPR: 0,
-        volume24h: 0,
-      },
-      {
-        pair: "INIT Lending (Echelon)",
-        type: "lending",
-        tvl: 12100000 + Math.random() * 100000,
-        feeAPR: 12.8 + Math.random(),
-        emissionAPR: 0,
-        volume24h: 0,
-      }
-    ];
+    const fs = require('fs');
+    const path = require('path');
+    const logPath = '/Users/jaibajrang/Desktop/Projects/initia/weave-keeper-bot/logs/harvest.json';
+    if (!fs.existsSync(logPath)) return "No logs found";
 
-    for (const pool of vaultData) {
-      await ctx.runMutation(api.functions.savePoolSnapshot, {
-        ...pool,
-        totalAPR: pool.feeAPR + pool.emissionAPR,
+    const content = fs.readFileSync(logPath, 'utf-8');
+    const logs = JSON.parse(content);
+    
+    for (const log of logs) {
+      await ctx.runMutation(api.functions.syncHarvestLog, {
+        strategyName: "Global Harvest",
+        amountReinvested: parseFloat(log.totalReinvested),
+        apyAtHarvest: parseFloat(log.sharePriceAfter) * 100,
+        timestamp: new Date(log.timestamp).getTime(),
+        txSignatures: ["0x_daily_harvest"],
       });
     }
+  },
+});
 
-    const totalTVL = vaultData.reduce((acc, p) => acc + p.tvl, 0);
-    await ctx.runMutation(api.functions.updateGlobalStats, {
-      totalTVL,
-      totalUsers: 1564,
-      totalYieldPaid: 1245800,
-    });
+export const syncVIPStages = action({
+  handler: async (ctx) => {
+    const fs = require('fs');
+    const path = require('path');
+    const logPath = '/Users/jaibajrang/Desktop/Projects/initia/weave-keeper-bot/logs/vip.json';
+    if (!fs.existsSync(logPath)) return "No logs found";
+
+    const content = fs.readFileSync(logPath, 'utf-8');
+    const logs = JSON.parse(content);
+    
+    for (const log of logs) {
+      await ctx.runMutation(api.functions.saveVIPStage, log);
+    }
+  },
+});
+
+export const getSharePriceAction = action({
+  handler: async (ctx) => {
+    // This could call the contract directly if we had an EVM provider in Convex
+    // For now, we simulate or assume it's updated via the keeper bot.
   },
 });
 

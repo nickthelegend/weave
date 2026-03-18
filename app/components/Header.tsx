@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, LayoutDashboard, Layers, Droplets, Gavel } from "lucide-react";
+import { Zap, LayoutDashboard, Layers, Droplets, Gavel, TrendingUp } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export function Header() {
@@ -20,10 +20,13 @@ export function Header() {
 
         <div className="hidden md:flex items-center gap-8">
           <Link href="/app" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
-            <LayoutDashboard size={14} /> Terminal
+            <LayoutDashboard size={14} /> App
           </Link>
-          <Link href="/governance" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
-            <Gavel size={14} /> Governance
+          <Link href="/dashboard" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
+            <Zap size={14} /> Activity
+          </Link>
+          <Link href="/vip" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
+            <TrendingUp size={14} /> VIP
           </Link>
           <Link href="/strategies" className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-primary transition-colors flex items-center gap-2">
             <Layers size={14} /> Strategies

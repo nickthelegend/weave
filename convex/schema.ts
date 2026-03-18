@@ -58,4 +58,12 @@ export default defineSchema({
     totalClaimed: v.number(),
     lastTxHash: v.optional(v.string()),
   }).index("by_wallet_token", ["wallet", "token"]),
+
+  vipStages: defineTable({
+    stage: v.number(),
+    timestamp: v.number(),
+    depositors: v.number(),
+    totalScore: v.string(),
+    esINITExpected: v.string(),
+  }),
 });

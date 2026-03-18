@@ -6,90 +6,35 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../IWeavifyStrategy.sol";
 
-interface IInitiaDEX {
-    function addLiquidity(
-        address tokenA, 
-        address tokenB, 
-        uint256 amountA, 
-        uint256 amountB, 
-        uint256 minA, 
-        uint256 minB, 
-        address to
-    ) external returns (uint256 liquidity);
-    
-    function removeLiquidity(
-        address tokenA, 
-        address tokenB, 
-        uint256 liquidity, 
-        uint256 minA, 
-        uint256 minB, 
-        address to
-    ) external returns (uint256 amountA, uint256 amountB);
-    
-    function swapExactTokensForTokens(
-        uint256 amountIn, 
-        uint256 amountOutMin, 
-        address[] calldata path, 
-        address to
-    ) external returns (uint256[] memory amounts);
-
-    function getQuote(uint256 amountIn, address[] calldata path) external view returns (uint256);
-}
-
-interface IInitiaEnshrinedLiquidity {
-    function bondLP(address pool, uint256 amount, address validator) external;
-    function unbondLP(address pool, uint256 amount) external;
-    function claimStakingRewards() external;
-    function pendingRewards(address user) external view returns (uint256);
-}
-
 /**
  * @title InitiaDEXStrategy
- * @dev Strategy for Initia Enshrined Liquidity USDC-INIT 20/80 Pool.
+ * @dev Re-architected for Move-based DEX interaction via off-chain Keeper.
  */
 contract InitiaDEXStrategy is IWeavifyStrategy, Ownable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable usdc;
-    IERC20 public immutable init;
-    IERC20 public immutable lpToken;
-    IInitiaDEX public immutable dex;
-    IInitiaEnshrinedLiquidity public immutable enshrinedLiquidity;
-    
     address public weaveVault;
     address public treasury;
-    address public validator;
+    address public keeper;
 
-    uint256 public constant FEE_DENOMINATOR = 10000;
-    uint256 public constant PERFORMANCE_FEE = 1000; // 10%
-
-    event StrategyDeposited(uint256 usdcAmount, uint256 lpAmount);
-    event StrategyWithdrawn(uint256 lpAmount, uint256 usdcAmount);
-    event StrategyHarvested(uint256 harvestedUsdc, uint256 fee);
+    uint256 public trackedBalance; // Real USDC value in the LP position (updated by keeper)
+    uint256 public pendingDeposits; // Idle USDC waiting for keeper zap
+    
+    event StrategyDeposited(uint256 amount);
+    event StrategyWithdrawn(uint256 amount);
+    event BalanceUpdated(uint256 newBalance, uint256 timestamp);
 
     constructor(
         address _usdc,
-        address _init,
-        address _lpToken,
-        address _dex,
-        address _enshrinedLiquidity,
         address _weaveVault,
         address _treasury,
-        address _validator
+        address _keeper
     ) Ownable(msg.sender) {
         usdc = IERC20(_usdc);
-        init = IERC20(_init);
-        lpToken = IERC20(_lpToken);
-        dex = IInitiaDEX(_dex);
-        enshrinedLiquidity = IInitiaEnshrinedLiquidity(_enshrinedLiquidity);
         weaveVault = _weaveVault;
         treasury = _treasury;
-        validator = _validator;
-        
-        // Initial approvals
-        usdc.safeIncreaseAllowance(_dex, type(uint256).max);
-        init.safeIncreaseAllowance(_dex, type(uint256).max);
-        lpToken.safeIncreaseAllowance(_enshrinedLiquidity, type(uint256).max);
+        keeper = _keeper;
     }
 
     modifier onlyVault() {
@@ -97,155 +42,80 @@ contract InitiaDEXStrategy is IWeavifyStrategy, Ownable {
         _;
     }
 
-    function setWeaveVault(address _weaveVault) external onlyOwner {
-        weaveVault = _weaveVault;
+    modifier onlyKeeper() {
+        require(msg.sender == keeper || msg.sender == owner(), "Not keeper");
+        _;
+    }
+
+    function setKeeper(address _keeper) external onlyOwner {
+        keeper = _keeper;
     }
 
     function setTreasury(address _treasury) external onlyOwner {
         treasury = _treasury;
     }
 
-    function setValidator(address _validator) external onlyOwner {
-        validator = _validator;
-    }
-
+    /**
+     * @dev Recieved USDC from vault. It will be zapped by keeper off-chain.
+     */
     function deposit(uint256 amount) external override onlyVault {
-        _deposit(amount);
+        usdc.safeTransferFrom(msg.sender, address(this), amount);
+        pendingDeposits += amount;
+        emit StrategyDeposited(amount);
     }
 
-    function _deposit(uint256 amount) internal {
-        // 1. Swap 80% USDC for INIT (to meet 20/80 weight requirement)
-        uint256 amountToSwap = (amount * 80) / 100;
-        uint256 amountRemaining = amount - amountToSwap;
-        
-        address[] memory path = new address[](2);
-        path[0] = address(usdc);
-        path[1] = address(init);
-        
-        dex.swapExactTokensForTokens(amountToSwap, 0, path, address(this));
-        
-        // 2. Add Liquidity
-        uint256 initBalance = init.balanceOf(address(this));
-        uint256 lpMinted = dex.addLiquidity(
-            address(usdc), 
-            address(init), 
-            amountRemaining, 
-            initBalance, 
-            0, 
-            0, 
-            address(this)
-        );
-        
-        // 3. Stake LP tokens
-        enshrinedLiquidity.bondLP(address(lpToken), lpMinted, validator);
-        
-        emit StrategyDeposited(amount, lpMinted);
-    }
-
+    /**
+     * @dev Synchronous withdraw from idle funds if possible, 
+     * otherwise signals keeper to liquidate LP tokens.
+     * Note: In automated yield aggregator architecture, withdraws usually 
+     * expect immediate return of funds.
+     */
     function withdraw(uint256 amount) external override onlyVault {
-        uint256 totalValue = balanceOf();
-        require(totalValue > 0, "No funds");
-        
-        // Calculate proportion of LP tokens to withdraw
-        // amount / totalValue = lpToWithdraw / totalLp
-        // We assume 1 lpToken = 1 unit of share for simplicity here
-        // In real use, we'd need to track LP tokens bonded
-        
-        // For this implementation, we withdraw a pro-rata share of LP tokens
-        // This is a simplified model of "withdraw specified amount of USDC"
-        
-        // Placeholder for LP calculation logic
-        // For now, we'll withdraw based on amount requested vs total value
-        uint256 lpToWithdraw = (amount * totalLP()) / totalValue;
-        
-        // 1. Unstake LP
-        enshrinedLiquidity.unbondLP(address(lpToken), lpToWithdraw);
-        
-        // 2. Remove Liquidity
-        (uint256 usdcReceived, uint256 initReceived) = dex.removeLiquidity(
-            address(usdc), 
-            address(init), 
-            lpToWithdraw, 
-            0, 
-            0, 
-            address(this)
-        );
-        
-        // 3. Swap INIT back to USDC
-        address[] memory path = new address[](2);
-        path[0] = address(init);
-        path[1] = address(usdc);
-        dex.swapExactTokensForTokens(initReceived, 0, path, address(this));
-        
-        // 4. Return USDC to vault
-        uint256 usdcBalance = usdc.balanceOf(address(this));
-        usdc.safeTransfer(weaveVault, usdcBalance);
-        
-        emit StrategyWithdrawn(lpToWithdraw, usdcBalance);
+        if (usdc.balanceOf(address(this)) >= amount) {
+            usdc.safeTransfer(weaveVault, amount);
+            if (pendingDeposits >= amount) {
+                pendingDeposits -= amount;
+            }
+        } else {
+            // In real cases, this might require a partial liquidation by keeper.
+            // For now, we assume strategy has enough liquid USDC for immediate withdraws
+            // or the vault handles the liquidity gap.
+            revert("Insufficient liquid funds in strategy - wait for harvest");
+        }
+        emit StrategyWithdrawn(amount);
     }
+
+    /**
+     * @dev Called by Keeper Bot after successful harvest/zap to update TVL.
+     */
+    function updateBalance(uint256 newTotalValue) external onlyKeeper {
+        // Track the yield generated since last update
+        if (newTotalValue > trackedBalance) {
+            uint256 yield = newTotalValue - trackedBalance;
+            totalYieldGenerated += yield; // If we keep a counter
+        }
+        
+        trackedBalance = newTotalValue;
+        pendingDeposits = 0; // Reset as keeper has moved funds to LP
+        emit BalanceUpdated(newTotalValue, block.timestamp);
+    }
+
+    uint256 public totalYieldGenerated;
 
     function harvest() external override returns (uint256) {
-        require(msg.sender == weaveVault || msg.sender == owner(), "Not authorized");
-        
-        // 1. Claim rewards (staking rewards + VIP rewards)
-        enshrinedLiquidity.claimStakingRewards();
-        
-        // 2. Swap all non-USDC rewards to USDC
-        uint256 harvestedInit = init.balanceOf(address(this));
-        if (harvestedInit > 0) {
-            address[] memory path = new address[](2);
-            path[0] = address(init);
-            path[1] = address(usdc);
-            dex.swapExactTokensForTokens(harvestedInit, 0, path, address(this));
-        }
-        
-        uint256 harvestedUsdc = usdc.balanceOf(address(this));
-        if (harvestedUsdc > 0) {
-            uint256 fee = (harvestedUsdc * PERFORMANCE_FEE) / FEE_DENOMINATOR;
-            uint256 netYield = harvestedUsdc - fee;
-            
-            if (fee > 0) {
-                usdc.safeTransfer(treasury, fee);
-            }
-            
-            // Reinvest net yield
-            _deposit(netYield);
-            
-            emit StrategyHarvested(harvestedUsdc, fee);
-            return netYield;
-        }
-        
-        return 0;
-    }
-
-    function totalLP() public view returns (uint256) {
-        // This should return the total LP tokens owned by this strategy (bonded + unbonded)
-        // For simplicity, we assume we can query this or track it
-        return lpToken.balanceOf(address(this)); // This is likely wrong if they are bonded
-        // In real implementation, we'd query the bond position
+        // Harvest now happens off-chain in Move DEX. 
+        // This Solidity function returns 0 or the last known yield.
+        return 0; 
     }
 
     function balanceOf() public view override returns (uint256) {
-        // Return total value in USDC
-        // Value = (Bonded LP + Idle LP) converted to USDC + Idle USDC + Idle INIT converted to USDC
-        
-        // Simplified estimate for now:
-        uint256 idleUsdc = usdc.balanceOf(address(this));
-        uint256 idleInit = init.balanceOf(address(this));
-        
-        // Quote idle INIT to USDC
-        address[] memory path = new address[](2);
-        path[0] = address(init);
-        path[1] = address(usdc);
-        uint256 initToUsdc = (idleInit > 0) ? dex.getQuote(idleInit, path) : 0;
-        
-        // Quote LP to USDC (assuming 1 LP = pool value / total shares)
-        // This is complex without pool reserves. We'll return a placeholder or simple logic
-        return idleUsdc + initToUsdc; 
+        return trackedBalance + usdc.balanceOf(address(this));
     }
 
     function getPendingYield() external view override returns (uint256) {
-        return enshrinedLiquidity.pendingRewards(address(this));
+        // In real use, keeper would update this variable too
+        return 0;
     }
 }
+
 

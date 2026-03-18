@@ -39,6 +39,10 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     uint256 public performanceFee = 1000; // 10%
     
     uint256 public totalYieldGenerated;
+    uint256 public pricePerShare = 1e6; // Default 1.0
+
+    address[] public depositorsList;
+    mapping(address => bool) private _isDepositor;
 
     event Deposited(address indexed user, uint256 amount, uint256 shares);
     event Withdrawn(address indexed user, uint256 amount, uint256 shares);
@@ -46,6 +50,7 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     event Harvested(uint256 netYield, uint256 fee, uint256 timestamp);
     event KeeperUpdated(address indexed keeper);
     event ExternalRewardsClaimed(uint256 amountSwapped, uint256 fee);
+    event SharePriceUpdated(uint256 newPrice, uint256 timestamp);
 
     modifier onlyKeeper() {
         require(msg.sender == keeper || msg.sender == owner(), "Not keeper");
@@ -57,6 +62,17 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         treasury = _treasury;
         keeper = msg.sender;
         dex = IInitiaDEX(_dex);
+    }
+
+    // --- Keeper Functions ---
+
+    function updateSharePrice(uint256 newPricePerShare) external onlyKeeper {
+        pricePerShare = newPricePerShare;
+        // Also update totalDeposited to match the new PPS for accounting
+        if (totalShares > 0) {
+            totalDeposited = (totalShares * newPricePerShare) / 1e6;
+        }
+        emit SharePriceUpdated(newPricePerShare, block.timestamp);
     }
 
     function setStrategy(address _strategy) external onlyOwner {
@@ -97,6 +113,11 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         if (address(strategy) != address(0)) {
             depositToken.safeIncreaseAllowance(address(strategy), amount);
             strategy.deposit(amount);
+        }
+
+        if (!_isDepositor[user]) {
+            depositorsList.push(user);
+            _isDepositor[user] = true;
         }
 
         userShares[user] += shares;
@@ -195,6 +216,27 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         return (userShares[user] * totalDeposited) / totalShares;
     }
 
+    // Called by keeper/vip.ts to get depositor list
+    function getTopDepositors(uint256 limit) 
+        external view returns (
+            address[] memory depositors,
+            uint256[] memory balances
+        ) {
+            uint256 count = depositorsList.length > limit ? limit : depositorsList.length;
+            depositors = new address[](count);
+            balances = new uint256[](count);
+            for (uint256 i = 0; i < count; i++) {
+                depositors[i] = depositorsList[i];
+                balances[i] = userShares[depositors[i]];
+            }
+    }
+
+    // VIP score = shares held
+    function getUserScore(address user) 
+        external view returns (uint256) {
+            return userShares[user];
+    }
+
     function getPricePerShare() public view returns (uint256) {
         if (totalShares == 0) return 1e6; // 1 USDC (6 decimals)
         return (totalDeposited * 1e6) / totalShares;
@@ -214,4 +256,5 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         );
     }
 }
+
 

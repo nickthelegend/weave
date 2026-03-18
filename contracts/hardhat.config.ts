@@ -29,6 +29,11 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       gasPrice: 1500000000,
     },
+    weaveLocal: {
+      url: "http://localhost:8545",
+      chainId: 1610154616031844, // eth_chainId of weave-1
+      accounts: [PRIVATE_KEY],
+    },
   },
 };
 

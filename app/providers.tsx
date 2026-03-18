@@ -25,14 +25,14 @@ const connectors = connectorsForWallets(
   }
 );
 
-// Define Initia Testnet L1 EVM
+// Define Initia Testnet L1 EVM (Now pointing to local weave-1)
 const minievm = {
-  id: 4303131403034904,
+  id: 1610154616031844, // eth_chainId of weave-1
   name: 'Minievm',
   nativeCurrency: { name: 'GAS', symbol: 'GAS', decimals: 18 },
   rpcUrls: {
     default: {
-      http: ['https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz'],
+      http: ['http://localhost:8545'],
     },
   },
 };
@@ -47,6 +47,45 @@ const wagmiConfig = createConfig({
 });
 
 const queryClient = new QueryClient();
+
+// Custom Chain Metadata for your local Weave-1 rollup
+// Aligned with initia-appchain-dev skill standards
+const weaveLocal: any = {
+  chain_id: "weave-1",
+  chain_name: "weave",
+  bech32_prefix: "init",
+  pretty_name: "Weave Local",
+  network_type: "testnet", // MANDATORY
+  status: "live",
+  apis: {
+    rpc: [{ address: "http://localhost:26657" }],
+    rest: [{ address: "http://localhost:1317" }],
+    indexer: [{ address: "http://localhost:8545" }], // Placeholder using JSON-RPC if indexer not started
+    "evm-http-jsonrpc": [{ address: "http://localhost:8545" }]
+  },
+  fees: {
+    fee_tokens: [{
+      denom: "GAS",
+      fixed_min_gas_price: 0,
+      low_gas_price: 0,
+      average_gas_price: 0,
+      high_gas_price: 0
+    }]
+  },
+  staking: { staking_tokens: [{ denom: "GAS" }] },
+  native_assets: [{
+    denom: "GAS",
+    name: "GAS",
+    symbol: "GAS",
+    decimals: 18 // Standard EVM precision
+  }],
+  metadata: {
+    is_l1: false,
+    minitia: {
+      type: "minievm"
+    }
+  }
+};
 
 export function Providers({ children }: PropsWithChildren) {
   useEffect(() => {
@@ -69,7 +108,13 @@ export function Providers({ children }: PropsWithChildren) {
                 },
               }}
             >
-              <InterwovenKitProvider {...TESTNET} defaultChainId="minievm-2">
+              <InterwovenKitProvider
+                {...TESTNET}
+                customChain={weaveLocal} // Standard property
+                // @ts-ignore - Required for local appchains per agent-skills
+                customChains={[weaveLocal]}
+                defaultChainId="weave-1"
+              >
                 {children}
               </InterwovenKitProvider>
             </PrivyProvider>

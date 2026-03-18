@@ -60,8 +60,8 @@ const weaveLocal: any = {
   apis: {
     rpc: [{ address: "http://localhost:26657" }],
     rest: [{ address: "http://localhost:1317" }],
-    indexer: [{ address: "http://localhost:8545" }], // Placeholder using JSON-RPC if indexer not started
-    "evm-http-jsonrpc": [{ address: "http://localhost:8545" }]
+    indexer: [{ address: "http://localhost:1317" }], // Use REST as placeholder to avoid URL not found
+    "json-rpc": [{ address: "http://localhost:8545" }]
   },
   fees: {
     fee_tokens: [{
@@ -109,11 +109,11 @@ export function Providers({ children }: PropsWithChildren) {
               }}
             >
               <InterwovenKitProvider
-                {...TESTNET}
-                customChain={weaveLocal} // Standard property
-                // @ts-ignore - Required for local appchains per agent-skills
+                customChain={weaveLocal}
+                // @ts-ignore
                 customChains={[weaveLocal]}
                 defaultChainId="weave-1"
+                theme="dark"
               >
                 {children}
               </InterwovenKitProvider>

@@ -46,7 +46,7 @@ export function useWeaveWallet() {
         publicClient.readContract({
           address: CONTRACT_ADDRESSES.weaveVault,
           abi: ABIS.weaveVault,
-          functionName: "balanceOf",
+          functionName: "userShares",
           args: [hexAddress as Address],
         }),
       ]);

@@ -12,6 +12,7 @@ import interwovenKitStyles from "@initia/interwovenkit-react/styles.js";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { ThemeProvider } from "next-themes";
 import { defineChain } from "viem";
+import { ConvexClientProvider } from "@/components/convex-client-provider";
 
 const connectors = connectorsForWallets(
   [
@@ -95,31 +96,33 @@ export function Providers({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <RainbowKitProvider theme={darkTheme()}>
-            <PrivyProvider
-              appId={PRIVY_APP_ID}
-              config={{
-                loginMethodsAndOrder: {
-                  primary: [`privy:${PRIVY_APP_ID}`, 'detected_ethereum_wallets'],
-                },
-              }}
-            >
-              <InterwovenKitProvider
-                customChain={weaveLocal}
-                // @ts-ignore
-                customChains={[weaveLocal]}
-                defaultChainId="weave-3"
-                theme="dark"
+    <ConvexClientProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <QueryClientProvider client={queryClient}>
+          <WagmiProvider config={wagmiConfig}>
+            <RainbowKitProvider theme={darkTheme()}>
+              <PrivyProvider
+                appId={PRIVY_APP_ID}
+                config={{
+                  loginMethodsAndOrder: {
+                    primary: [`privy:${PRIVY_APP_ID}`, 'detected_ethereum_wallets'],
+                  },
+                }}
               >
-                {children}
-              </InterwovenKitProvider>
-            </PrivyProvider>
-          </RainbowKitProvider>
-        </WagmiProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+                <InterwovenKitProvider
+                  customChain={weaveLocal}
+                  // @ts-ignore
+                  customChains={[weaveLocal]}
+                  defaultChainId="weave-3"
+                  theme="dark"
+                >
+                  {children}
+                </InterwovenKitProvider>
+              </PrivyProvider>
+            </RainbowKitProvider>
+          </WagmiProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ConvexClientProvider>
   );
 }

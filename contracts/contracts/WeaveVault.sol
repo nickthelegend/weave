@@ -6,9 +6,15 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "./IWeavifyStrategy.sol";
 
-interface IWeaveRewards {
-    function distributeRewards(uint256 usdcAmount) external;
+interface IInitiaDEX {
+    function swapExactTokensForTokens(
+        uint256 amountIn, 
+        uint256 amountOutMin, 
+        address[] calldata path, 
+        address to
+    ) external returns (uint256[] memory amounts);
 }
 
 /**
@@ -23,35 +29,39 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     uint256 public totalShares;
 
     mapping(address => uint256) public userShares;
-    mapping(address => uint256) public depositTimestamp;
-
+    
+    IWeavifyStrategy public strategy;
+    address public treasury;
     address public keeper;
-    uint256 public protocolFee = 1000; // 10% in basis points
-    address public feeRecipient; // future WEAVE staking contract (WeaveRewards)
-    uint256 public totalProtocolFeesAccrued;
+    IInitiaDEX public dex;
+
+    uint256 public constant FEE_DENOMINATOR = 10000;
+    uint256 public performanceFee = 1000; // 10%
+    
     uint256 public totalYieldGenerated;
 
     event Deposited(address indexed user, uint256 amount, uint256 shares);
     event Withdrawn(address indexed user, uint256 amount, uint256 shares);
+    event StrategyUpdated(address indexed strategy);
     event Harvested(uint256 netYield, uint256 fee, uint256 timestamp);
     event KeeperUpdated(address indexed keeper);
-    event FeeRecipientUpdated(address indexed recipient);
-    event FeeSent(uint256 amount);
+    event ExternalRewardsClaimed(uint256 amountSwapped, uint256 fee);
 
     modifier onlyKeeper() {
         require(msg.sender == keeper || msg.sender == owner(), "Not keeper");
         _;
     }
 
-    constructor(address _depositToken) Ownable(msg.sender) {
+    constructor(address _depositToken, address _treasury, address _dex) Ownable(msg.sender) {
         depositToken = IERC20(_depositToken);
+        treasury = _treasury;
         keeper = msg.sender;
-        feeRecipient = msg.sender;
+        dex = IInitiaDEX(_dex);
     }
 
-    function setPaused(bool _paused) external onlyOwner {
-        if (_paused) _pause();
-        else _unpause();
+    function setStrategy(address _strategy) external onlyOwner {
+        strategy = IWeavifyStrategy(_strategy);
+        emit StrategyUpdated(_strategy);
     }
 
     function setKeeper(address _keeper) external onlyOwner {
@@ -59,9 +69,8 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         emit KeeperUpdated(_keeper);
     }
 
-    function setFeeRecipient(address _recipient) external onlyOwner {
-        feeRecipient = _recipient;
-        emit FeeRecipientUpdated(_recipient);
+    function setDex(address _dex) external onlyOwner {
+        dex = IInitiaDEX(_dex);
     }
 
     function deposit(uint256 amount) external {
@@ -84,10 +93,15 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
 
         depositToken.safeTransferFrom(msg.sender, address(this), amount);
 
+        // Supply to strategy
+        if (address(strategy) != address(0)) {
+            depositToken.safeIncreaseAllowance(address(strategy), amount);
+            strategy.deposit(amount);
+        }
+
         userShares[user] += shares;
         totalShares += shares;
         totalDeposited += amount;
-        depositTimestamp[user] = block.timestamp;
 
         emit Deposited(user, amount, shares);
     }
@@ -98,6 +112,11 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
 
         uint256 usdcAmount = (shareAmount * totalDeposited) / totalShares;
 
+        // Withdraw from strategy
+        if (address(strategy) != address(0)) {
+            strategy.withdraw(usdcAmount);
+        }
+
         userShares[msg.sender] -= shareAmount;
         totalShares -= shareAmount;
         totalDeposited -= usdcAmount;
@@ -107,25 +126,68 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         emit Withdrawn(msg.sender, usdcAmount, shareAmount);
     }
 
-    function harvest(uint256 yieldAmount) external onlyKeeper whenNotPaused {
-        uint256 fee = (yieldAmount * protocolFee) / 10000;
-        uint256 netYield = yieldAmount - fee;
-
+    /**
+     * @dev Triggered by keeper to harvest yield from strategies.
+     */
+    function harvest() external onlyKeeper whenNotPaused {
+        require(address(strategy) != address(0), "No strategy");
+        
+        uint256 netYield = strategy.harvest();
+        
+        // Update vault state
+        totalYieldGenerated += netYield;
         totalDeposited += netYield;
-        totalProtocolFeesAccrued += fee;
-        totalYieldGenerated += yieldAmount;
+        
+        emit Harvested(netYield, 0, block.timestamp);
+    }
 
-        // V2: Send fees to WeaveRewards
-        if (feeRecipient != address(0) && fee > 0) {
-            depositToken.safeIncreaseAllowance(feeRecipient, fee);
-            try IWeaveRewards(feeRecipient).distributeRewards(fee) {
-                emit FeeSent(fee);
-            } catch {
-                // If call fails, keep fees in vault for future recovery
+    /**
+     * @dev Handles secondary reward tokens (INIT, esINIT, etc)
+     * Swaps them to USDC, takes performance fee, and reinvests.
+     */
+    function claimExternalRewards(address[] calldata rewardTokens) external onlyKeeper {
+        uint256 totalSwappedToUsdc = 0;
+
+        for (uint256 i = 0; i < rewardTokens.length; i++) {
+            address token = rewardTokens[i];
+            uint256 balance = IERC20(token).balanceOf(address(this));
+            
+            if (balance > 0) {
+                IERC20(token).safeIncreaseAllowance(address(dex), balance);
+                
+                address[] memory path = new address[](2);
+                path[0] = token;
+                path[1] = address(depositToken);
+                
+                uint256[] memory amounts = dex.swapExactTokensForTokens(
+                    balance, 
+                    0, 
+                    path, 
+                    address(this)
+                );
+                totalSwappedToUsdc += amounts[amounts.length - 1];
             }
         }
 
-        emit Harvested(netYield, fee, block.timestamp);
+        if (totalSwappedToUsdc > 0) {
+            uint256 fee = (totalSwappedToUsdc * performanceFee) / FEE_DENOMINATOR;
+            uint256 netAmount = totalSwappedToUsdc - fee;
+
+            if (fee > 0) {
+                depositToken.safeTransfer(treasury, fee);
+            }
+
+            // Reinvest into strategy
+            if (address(strategy) != address(0)) {
+                depositToken.safeIncreaseAllowance(address(strategy), netAmount);
+                strategy.deposit(netAmount);
+            }
+
+            totalYieldGenerated += netAmount;
+            totalDeposited += netAmount;
+
+            emit ExternalRewardsClaimed(totalSwappedToUsdc, fee);
+        }
     }
 
     function getUserValue(address user) public view returns (uint256) {
@@ -142,15 +204,14 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         uint256 _totalDeposited,
         uint256 _totalShares,
         uint256 _totalYieldGenerated,
-        uint256 _totalProtocolFeesAccrued,
         uint256 _pricePerShare
     ) {
         return (
             totalDeposited,
             totalShares,
             totalYieldGenerated,
-            totalProtocolFeesAccrued,
             getPricePerShare()
         );
     }
 }
+

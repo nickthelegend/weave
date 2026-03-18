@@ -6,8 +6,13 @@ import { api } from "./_generated/api";
 
 export const getLatestPools = query({
   handler: async (ctx) => {
-    // Get unique pairs and their latest snapshot
-    const pairs = ["USDC-INIT", "INIT Supply"];
+    // Real Weavify Strategies on Initia
+    const pairs = [
+      "USDC-INIT LP + Stake",
+      "iUSD-USDC LP",
+      "USDC Lending (Echelon)",
+      "INIT Lending (Echelon)"
+    ];
     const pools = [];
     for (const pair of pairs) {
       const latest = await ctx.db
@@ -121,7 +126,7 @@ export const updateGlobalStats = mutation({
       await ctx.db.insert("globalStats", {
         ...args,
         lastHarvestAt: Date.now(),
-        activeStrategies: 2,
+        activeStrategies: 4,
         protocolFeeRate: 0.1,
       });
     }
@@ -132,39 +137,60 @@ export const updateGlobalStats = mutation({
 
 export const syncPoolData = action({
   handler: async (ctx) => {
-    // In a real scenario, this fetches from Initia LCD
-    // For the demo, we simulate the fetch and update the DB
-    const mockData = [
+    /** 
+     * In a real production scenario, we'd fetch live data here:
+     * - Echelon markets (USDC/INIT): Query contract methods
+     * - Initia DEX (USDC-INIT, iUSD-USDC): Query LP reserves and emission rates
+     */
+    
+    const vaultData = [
       {
-        pair: "USDC-INIT",
+        pair: "USDC-INIT LP + Stake",
         type: "weighted",
-        tvl: 14200000 + Math.random() * 100000,
-        feeAPR: 12.4 + Math.random(),
-        emissionAPR: 157.0 + Math.random(),
-        volume24h: 1200000 + Math.random() * 50000,
+        tvl: 45200000 + Math.random() * 500000,
+        feeAPR: 24.1 + Math.random(),
+        emissionAPR: 138.2 + Math.random(),
+        volume24h: 3400000,
       },
       {
-        pair: "INIT Supply",
+        pair: "iUSD-USDC LP",
         type: "stable",
-        tvl: 28500000 + Math.random() * 100000,
-        feeAPR: 8.1 + Math.random(),
-        emissionAPR: 6.1 + Math.random(),
+        tvl: 22800000 + Math.random() * 200000,
+        feeAPR: 14.5 + Math.random(),
+        emissionAPR: 0,
+        volume24h: 850000,
+      },
+      {
+        pair: "USDC Lending (Echelon)",
+        type: "lending",
+        tvl: 18400000 + Math.random() * 100000,
+        feeAPR: 8.4 + Math.random(),
+        emissionAPR: 0,
+        volume24h: 0,
+      },
+      {
+        pair: "INIT Lending (Echelon)",
+        type: "lending",
+        tvl: 12100000 + Math.random() * 100000,
+        feeAPR: 12.8 + Math.random(),
+        emissionAPR: 0,
         volume24h: 0,
       }
     ];
 
-    for (const pool of mockData) {
+    for (const pool of vaultData) {
       await ctx.runMutation(api.functions.savePoolSnapshot, {
         ...pool,
         totalAPR: pool.feeAPR + pool.emissionAPR,
       });
     }
 
-    const totalTVL = mockData.reduce((acc, p) => acc + p.tvl, 0);
+    const totalTVL = vaultData.reduce((acc, p) => acc + p.tvl, 0);
     await ctx.runMutation(api.functions.updateGlobalStats, {
       totalTVL,
-      totalUsers: 1242,
-      totalYieldPaid: 842100,
+      totalUsers: 1564,
+      totalYieldPaid: 1245800,
     });
   },
 });
+

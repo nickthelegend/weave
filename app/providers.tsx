@@ -11,6 +11,7 @@ import { initiaPrivyWallet, injectStyles, InterwovenKitProvider, TESTNET, PRIVY_
 import interwovenKitStyles from "@initia/interwovenkit-react/styles.js";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { ThemeProvider } from "next-themes";
+import { defineChain } from "viem";
 
 const connectors = connectorsForWallets(
   [
@@ -26,16 +27,15 @@ const connectors = connectorsForWallets(
 );
 
 // Define local EVM chain for Wagmi (Now pointing to VPS weave-3)
-const minievm = {
+const minievm = defineChain({
   id: 1072375175819285, // eth_chainId of weave-3 on VPS
   name: 'Minievm',
   nativeCurrency: { name: 'GAS', symbol: 'GAS', decimals: 18 },
   rpcUrls: {
-    default: {
-      http: ['http://140.245.243.150:8545'],
-    },
+    default: { http: ['http://140.245.243.150:8545'] },
+    public: { http: ['http://140.245.243.150:8545'] },
   },
-};
+});
 
 const wagmiConfig = createConfig({
   connectors,

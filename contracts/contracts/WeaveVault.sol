@@ -265,7 +265,7 @@ contract WeaveVault is ERC20, ReentrancyGuard, Ownable, Pausable {
     ) {
         return (
             totalDeposited,
-            totalShares,
+            totalSupply(),
             totalYieldGenerated,
             getPricePerShare()
         );

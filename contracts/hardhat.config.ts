@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       gasPrice: 1500000000,
     },
-    weaveLocal: {
+    weave: {
       url: "http://140.245.243.150:8545",
       chainId: 1072375175819285, // eth_chainId of weave-3 on VPS
       accounts: [PRIVATE_KEY],

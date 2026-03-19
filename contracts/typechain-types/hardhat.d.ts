@@ -70,6 +70,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IStrategy__factory>;
     getContractFactory(
+      name: "IWeavifyStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWeavifyStrategy__factory>;
+    getContractFactory(
       name: "MockERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockERC20__factory>;
@@ -82,9 +86,25 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBlackwing__factory>;
     getContractFactory(
+      name: "EchelonStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.EchelonStrategy__factory>;
+    getContractFactory(
+      name: "IEchelonMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IEchelonMarket__factory>;
+    getContractFactory(
+      name: "InitiaDEXStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.InitiaDEXStrategy__factory>;
+    getContractFactory(
       name: "MockProtocol",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockProtocol__factory>;
+    getContractFactory(
+      name: "StableLPStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StableLPStrategy__factory>;
     getContractFactory(
       name: "ITucana",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -97,6 +117,10 @@ declare module "hardhat/types/runtime" {
       name: "VeWeave",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VeWeave__factory>;
+    getContractFactory(
+      name: "VIPScore",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VIPScore__factory>;
     getContractFactory(
       name: "IVeWeave",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -117,6 +141,10 @@ declare module "hardhat/types/runtime" {
       name: "WeaveToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WeaveToken__factory>;
+    getContractFactory(
+      name: "IInitiaDEX",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IInitiaDEX__factory>;
     getContractFactory(
       name: "IWeaveRewards",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -209,6 +237,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IStrategy>;
     getContractAt(
+      name: "IWeavifyStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWeavifyStrategy>;
+    getContractAt(
       name: "MockERC20",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -224,10 +257,30 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IBlackwing>;
     getContractAt(
+      name: "EchelonStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.EchelonStrategy>;
+    getContractAt(
+      name: "IEchelonMarket",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IEchelonMarket>;
+    getContractAt(
+      name: "InitiaDEXStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.InitiaDEXStrategy>;
+    getContractAt(
       name: "MockProtocol",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.MockProtocol>;
+    getContractAt(
+      name: "StableLPStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.StableLPStrategy>;
     getContractAt(
       name: "ITucana",
       address: string | ethers.Addressable,
@@ -243,6 +296,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.VeWeave>;
+    getContractAt(
+      name: "VIPScore",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VIPScore>;
     getContractAt(
       name: "IVeWeave",
       address: string | ethers.Addressable,
@@ -268,6 +326,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.WeaveToken>;
+    getContractAt(
+      name: "IInitiaDEX",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IInitiaDEX>;
     getContractAt(
       name: "IWeaveRewards",
       address: string | ethers.Addressable,
@@ -351,6 +414,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IStrategy>;
     deployContract(
+      name: "IWeavifyStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWeavifyStrategy>;
+    deployContract(
       name: "MockERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC20>;
@@ -363,9 +430,25 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBlackwing>;
     deployContract(
+      name: "EchelonStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EchelonStrategy>;
+    deployContract(
+      name: "IEchelonMarket",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IEchelonMarket>;
+    deployContract(
+      name: "InitiaDEXStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.InitiaDEXStrategy>;
+    deployContract(
       name: "MockProtocol",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockProtocol>;
+    deployContract(
+      name: "StableLPStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.StableLPStrategy>;
     deployContract(
       name: "ITucana",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -378,6 +461,10 @@ declare module "hardhat/types/runtime" {
       name: "VeWeave",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VeWeave>;
+    deployContract(
+      name: "VIPScore",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VIPScore>;
     deployContract(
       name: "IVeWeave",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -398,6 +485,10 @@ declare module "hardhat/types/runtime" {
       name: "WeaveToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveToken>;
+    deployContract(
+      name: "IInitiaDEX",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IInitiaDEX>;
     deployContract(
       name: "IWeaveRewards",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -490,6 +581,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IStrategy>;
     deployContract(
+      name: "IWeavifyStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWeavifyStrategy>;
+    deployContract(
       name: "MockERC20",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -505,10 +601,30 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBlackwing>;
     deployContract(
+      name: "EchelonStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EchelonStrategy>;
+    deployContract(
+      name: "IEchelonMarket",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IEchelonMarket>;
+    deployContract(
+      name: "InitiaDEXStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.InitiaDEXStrategy>;
+    deployContract(
       name: "MockProtocol",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockProtocol>;
+    deployContract(
+      name: "StableLPStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.StableLPStrategy>;
     deployContract(
       name: "ITucana",
       args: any[],
@@ -524,6 +640,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VeWeave>;
+    deployContract(
+      name: "VIPScore",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VIPScore>;
     deployContract(
       name: "IVeWeave",
       args: any[],
@@ -549,6 +670,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WeaveToken>;
+    deployContract(
+      name: "IInitiaDEX",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IInitiaDEX>;
     deployContract(
       name: "IWeaveRewards",
       args: any[],

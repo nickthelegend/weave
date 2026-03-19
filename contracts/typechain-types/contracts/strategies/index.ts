@@ -3,6 +3,10 @@
 /* eslint-disable */
 import type * as blackwingStrategySol from "./BlackwingStrategy.sol";
 export type { blackwingStrategySol };
+import type * as echelonStrategySol from "./EchelonStrategy.sol";
+export type { echelonStrategySol };
 import type * as tucanaStrategySol from "./TucanaStrategy.sol";
 export type { tucanaStrategySol };
+export type { InitiaDEXStrategy } from "./InitiaDEXStrategy";
 export type { MockProtocol } from "./MockProtocol";
+export type { StableLPStrategy } from "./StableLPStrategy";

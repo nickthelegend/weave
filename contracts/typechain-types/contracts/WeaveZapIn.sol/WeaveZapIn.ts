@@ -24,16 +24,16 @@ import type {
 } from "../../common";
 
 export interface WeaveZapInInterface extends Interface {
-  getFunction(nameOrSignature: "deposit"): FunctionFragment;
+  getFunction(nameOrSignature: "zapIn"): FunctionFragment;
 
   getEvent(nameOrSignatureOrTopic: "ZapDeposited"): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "deposit",
-    values: [BigNumberish, AddressLike]
+    functionFragment: "zapIn",
+    values: [AddressLike, BigNumberish, AddressLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "zapIn", data: BytesLike): Result;
 }
 
 export namespace ZapDepositedEvent {
@@ -92,8 +92,8 @@ export interface WeaveZapIn extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  deposit: TypedContractMethod<
-    [usdcAmount: BigNumberish, vaultAddress: AddressLike],
+  zapIn: TypedContractMethod<
+    [tokenIn: AddressLike, amountIn: BigNumberish, vaultAddress: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -103,9 +103,9 @@ export interface WeaveZapIn extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "deposit"
+    nameOrSignature: "zapIn"
   ): TypedContractMethod<
-    [usdcAmount: BigNumberish, vaultAddress: AddressLike],
+    [tokenIn: AddressLike, amountIn: BigNumberish, vaultAddress: AddressLike],
     [void],
     "nonpayable"
   >;

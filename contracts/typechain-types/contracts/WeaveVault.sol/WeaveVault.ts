@@ -26,45 +26,87 @@ import type {
 export interface WeaveVaultInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "FEE_DENOMINATOR"
+      | "allowance"
+      | "approve"
+      | "balanceOf"
+      | "claimExternalRewards"
+      | "decimals"
       | "deposit"
       | "depositFor"
-      | "depositTimestamp"
       | "depositToken"
-      | "feeRecipient"
+      | "depositorsList"
+      | "dex"
       | "getPricePerShare"
+      | "getTopDepositors"
+      | "getUserScore"
       | "getUserValue"
       | "getVaultStats"
       | "harvest"
       | "keeper"
+      | "maxTVL"
+      | "name"
       | "owner"
+      | "pause"
       | "paused"
-      | "protocolFee"
+      | "performanceFee"
+      | "pricePerShare"
       | "renounceOwnership"
-      | "setFeeRecipient"
+      | "setDex"
       | "setKeeper"
-      | "setPaused"
+      | "setMaxTVL"
+      | "setStrategy"
+      | "strategy"
+      | "symbol"
       | "totalDeposited"
-      | "totalProtocolFeesAccrued"
-      | "totalShares"
+      | "totalSupply"
       | "totalYieldGenerated"
+      | "transfer"
+      | "transferFrom"
       | "transferOwnership"
-      | "userShares"
+      | "treasury"
+      | "unpause"
+      | "updateSharePrice"
       | "withdraw"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "Approval"
       | "Deposited"
-      | "FeeRecipientUpdated"
-      | "FeeSent"
+      | "ExternalRewardsClaimed"
       | "Harvested"
       | "KeeperUpdated"
       | "OwnershipTransferred"
       | "Paused"
+      | "SharePriceUpdated"
+      | "StrategyUpdated"
+      | "Transfer"
       | "Unpaused"
       | "Withdrawn"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "FEE_DENOMINATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "allowance",
+    values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "balanceOf",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimExternalRewards",
+    values: [AddressLike[]]
+  ): string;
+  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "deposit",
     values: [BigNumberish]
@@ -74,20 +116,25 @@ export interface WeaveVaultInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "depositTimestamp",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "depositToken",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "feeRecipient",
-    values?: undefined
+    functionFragment: "depositorsList",
+    values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "dex", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getPricePerShare",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTopDepositors",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUserScore",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getUserValue",
@@ -97,40 +144,46 @@ export interface WeaveVaultInterface extends Interface {
     functionFragment: "getVaultStats",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "harvest",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "harvest", values?: undefined): string;
   encodeFunctionData(functionFragment: "keeper", values?: undefined): string;
+  encodeFunctionData(functionFragment: "maxTVL", values?: undefined): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "protocolFee",
+    functionFragment: "performanceFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pricePerShare",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "setFeeRecipient",
-    values: [AddressLike]
-  ): string;
+  encodeFunctionData(functionFragment: "setDex", values: [AddressLike]): string;
   encodeFunctionData(
     functionFragment: "setKeeper",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "setPaused", values: [boolean]): string;
+  encodeFunctionData(
+    functionFragment: "setMaxTVL",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setStrategy",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "strategy", values?: undefined): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalDeposited",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "totalProtocolFeesAccrued",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalShares",
+    functionFragment: "totalSupply",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -138,34 +191,61 @@ export interface WeaveVaultInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "transfer",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferFrom",
+    values: [AddressLike, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "treasury", values?: undefined): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "userShares",
-    values: [AddressLike]
+    functionFragment: "updateSharePrice",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "withdraw",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "depositFor", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "depositTimestamp",
+    functionFragment: "FEE_DENOMINATOR",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "claimExternalRewards",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "depositFor", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "depositToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "feeRecipient",
+    functionFragment: "depositorsList",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "dex", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPricePerShare",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPricePerShare",
+    functionFragment: "getTopDepositors",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUserScore",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -178,44 +258,78 @@ export interface WeaveVaultInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "harvest", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "keeper", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "maxTVL", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "protocolFee",
+    functionFragment: "performanceFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pricePerShare",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setDex", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setKeeper", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setMaxTVL", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setFeeRecipient",
+    functionFragment: "setStrategy",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setKeeper", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "setPaused", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "strategy", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalDeposited",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalProtocolFeesAccrued",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalShares",
+    functionFragment: "totalSupply",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalYieldGenerated",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "transferFrom",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "userShares", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "treasury", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateSharePrice",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+}
+
+export namespace ApprovalEvent {
+  export type InputTuple = [
+    owner: AddressLike,
+    spender: AddressLike,
+    value: BigNumberish
+  ];
+  export type OutputTuple = [owner: string, spender: string, value: bigint];
+  export interface OutputObject {
+    owner: string;
+    spender: string;
+    value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace DepositedEvent {
@@ -236,23 +350,12 @@ export namespace DepositedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace FeeRecipientUpdatedEvent {
-  export type InputTuple = [recipient: AddressLike];
-  export type OutputTuple = [recipient: string];
+export namespace ExternalRewardsClaimedEvent {
+  export type InputTuple = [amountSwapped: BigNumberish, fee: BigNumberish];
+  export type OutputTuple = [amountSwapped: bigint, fee: bigint];
   export interface OutputObject {
-    recipient: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace FeeSentEvent {
-  export type InputTuple = [amount: BigNumberish];
-  export type OutputTuple = [amount: bigint];
-  export interface OutputObject {
-    amount: bigint;
+    amountSwapped: bigint;
+    fee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -308,6 +411,49 @@ export namespace PausedEvent {
   export type OutputTuple = [account: string];
   export interface OutputObject {
     account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace SharePriceUpdatedEvent {
+  export type InputTuple = [newPrice: BigNumberish, timestamp: BigNumberish];
+  export type OutputTuple = [newPrice: bigint, timestamp: bigint];
+  export interface OutputObject {
+    newPrice: bigint;
+    timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace StrategyUpdatedEvent {
+  export type InputTuple = [strategy: AddressLike];
+  export type OutputTuple = [strategy: string];
+  export interface OutputObject {
+    strategy: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TransferEvent {
+  export type InputTuple = [
+    from: AddressLike,
+    to: AddressLike,
+    value: BigNumberish
+  ];
+  export type OutputTuple = [from: string, to: string, value: bigint];
+  export interface OutputObject {
+    from: string;
+    to: string;
+    value: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -388,6 +534,30 @@ export interface WeaveVault extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  FEE_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
+
+  allowance: TypedContractMethod<
+    [owner: AddressLike, spender: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  approve: TypedContractMethod<
+    [spender: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+
+  balanceOf: TypedContractMethod<[account: AddressLike], [bigint], "view">;
+
+  claimExternalRewards: TypedContractMethod<
+    [rewardTokens: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+
+  decimals: TypedContractMethod<[], [bigint], "view">;
+
   deposit: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   depositFor: TypedContractMethod<
@@ -396,63 +566,90 @@ export interface WeaveVault extends BaseContract {
     "nonpayable"
   >;
 
-  depositTimestamp: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
-
   depositToken: TypedContractMethod<[], [string], "view">;
 
-  feeRecipient: TypedContractMethod<[], [string], "view">;
+  depositorsList: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+
+  dex: TypedContractMethod<[], [string], "view">;
 
   getPricePerShare: TypedContractMethod<[], [bigint], "view">;
+
+  getTopDepositors: TypedContractMethod<
+    [limit: BigNumberish],
+    [[string[], bigint[]] & { depositors: string[]; balances: bigint[] }],
+    "view"
+  >;
+
+  getUserScore: TypedContractMethod<[user: AddressLike], [bigint], "view">;
 
   getUserValue: TypedContractMethod<[user: AddressLike], [bigint], "view">;
 
   getVaultStats: TypedContractMethod<
     [],
     [
-      [bigint, bigint, bigint, bigint, bigint] & {
+      [bigint, bigint, bigint, bigint] & {
         _totalDeposited: bigint;
         _totalShares: bigint;
         _totalYieldGenerated: bigint;
-        _totalProtocolFeesAccrued: bigint;
         _pricePerShare: bigint;
       }
     ],
     "view"
   >;
 
-  harvest: TypedContractMethod<
-    [yieldAmount: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
+  harvest: TypedContractMethod<[], [void], "nonpayable">;
 
   keeper: TypedContractMethod<[], [string], "view">;
 
+  maxTVL: TypedContractMethod<[], [bigint], "view">;
+
+  name: TypedContractMethod<[], [string], "view">;
+
   owner: TypedContractMethod<[], [string], "view">;
+
+  pause: TypedContractMethod<[], [void], "nonpayable">;
 
   paused: TypedContractMethod<[], [boolean], "view">;
 
-  protocolFee: TypedContractMethod<[], [bigint], "view">;
+  performanceFee: TypedContractMethod<[], [bigint], "view">;
+
+  pricePerShare: TypedContractMethod<[], [bigint], "view">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  setFeeRecipient: TypedContractMethod<
-    [_recipient: AddressLike],
+  setDex: TypedContractMethod<[_dex: AddressLike], [void], "nonpayable">;
+
+  setKeeper: TypedContractMethod<[_keeper: AddressLike], [void], "nonpayable">;
+
+  setMaxTVL: TypedContractMethod<[_maxTVL: BigNumberish], [void], "nonpayable">;
+
+  setStrategy: TypedContractMethod<
+    [_strategy: AddressLike],
     [void],
     "nonpayable"
   >;
 
-  setKeeper: TypedContractMethod<[_keeper: AddressLike], [void], "nonpayable">;
+  strategy: TypedContractMethod<[], [string], "view">;
 
-  setPaused: TypedContractMethod<[_paused: boolean], [void], "nonpayable">;
+  symbol: TypedContractMethod<[], [string], "view">;
 
   totalDeposited: TypedContractMethod<[], [bigint], "view">;
 
-  totalProtocolFeesAccrued: TypedContractMethod<[], [bigint], "view">;
-
-  totalShares: TypedContractMethod<[], [bigint], "view">;
+  totalSupply: TypedContractMethod<[], [bigint], "view">;
 
   totalYieldGenerated: TypedContractMethod<[], [bigint], "view">;
+
+  transfer: TypedContractMethod<
+    [to: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+
+  transferFrom: TypedContractMethod<
+    [from: AddressLike, to: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
 
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
@@ -460,10 +657,18 @@ export interface WeaveVault extends BaseContract {
     "nonpayable"
   >;
 
-  userShares: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  treasury: TypedContractMethod<[], [string], "view">;
+
+  unpause: TypedContractMethod<[], [void], "nonpayable">;
+
+  updateSharePrice: TypedContractMethod<
+    [newPricePerShare: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   withdraw: TypedContractMethod<
-    [shareAmount: BigNumberish],
+    [shareAmount: BigNumberish, minOut: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -472,6 +677,32 @@ export interface WeaveVault extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "FEE_DENOMINATOR"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "allowance"
+  ): TypedContractMethod<
+    [owner: AddressLike, spender: AddressLike],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "approve"
+  ): TypedContractMethod<
+    [spender: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "balanceOf"
+  ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "claimExternalRewards"
+  ): TypedContractMethod<[rewardTokens: AddressLike[]], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "decimals"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "deposit"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
@@ -483,17 +714,27 @@ export interface WeaveVault extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "depositTimestamp"
-  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
-  getFunction(
     nameOrSignature: "depositToken"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "feeRecipient"
+    nameOrSignature: "depositorsList"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "dex"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getPricePerShare"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getTopDepositors"
+  ): TypedContractMethod<
+    [limit: BigNumberish],
+    [[string[], bigint[]] & { depositors: string[]; balances: bigint[] }],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getUserScore"
+  ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "getUserValue"
   ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
@@ -502,11 +743,10 @@ export interface WeaveVault extends BaseContract {
   ): TypedContractMethod<
     [],
     [
-      [bigint, bigint, bigint, bigint, bigint] & {
+      [bigint, bigint, bigint, bigint] & {
         _totalDeposited: bigint;
         _totalShares: bigint;
         _totalYieldGenerated: bigint;
-        _totalProtocolFeesAccrued: bigint;
         _pricePerShare: bigint;
       }
     ],
@@ -514,53 +754,106 @@ export interface WeaveVault extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "harvest"
-  ): TypedContractMethod<[yieldAmount: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "keeper"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "maxTVL"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "pause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "paused"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
-    nameOrSignature: "protocolFee"
+    nameOrSignature: "performanceFee"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "pricePerShare"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "setFeeRecipient"
-  ): TypedContractMethod<[_recipient: AddressLike], [void], "nonpayable">;
+    nameOrSignature: "setDex"
+  ): TypedContractMethod<[_dex: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setKeeper"
   ): TypedContractMethod<[_keeper: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "setPaused"
-  ): TypedContractMethod<[_paused: boolean], [void], "nonpayable">;
+    nameOrSignature: "setMaxTVL"
+  ): TypedContractMethod<[_maxTVL: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setStrategy"
+  ): TypedContractMethod<[_strategy: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "strategy"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "symbol"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "totalDeposited"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "totalProtocolFeesAccrued"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "totalShares"
+    nameOrSignature: "totalSupply"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "totalYieldGenerated"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "transfer"
+  ): TypedContractMethod<
+    [to: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom"
+  ): TypedContractMethod<
+    [from: AddressLike, to: AddressLike, value: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "userShares"
-  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+    nameOrSignature: "treasury"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "unpause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "updateSharePrice"
+  ): TypedContractMethod<
+    [newPricePerShare: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "withdraw"
-  ): TypedContractMethod<[shareAmount: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [shareAmount: BigNumberish, minOut: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
+  getEvent(
+    key: "Approval"
+  ): TypedContractEvent<
+    ApprovalEvent.InputTuple,
+    ApprovalEvent.OutputTuple,
+    ApprovalEvent.OutputObject
+  >;
   getEvent(
     key: "Deposited"
   ): TypedContractEvent<
@@ -569,18 +862,11 @@ export interface WeaveVault extends BaseContract {
     DepositedEvent.OutputObject
   >;
   getEvent(
-    key: "FeeRecipientUpdated"
+    key: "ExternalRewardsClaimed"
   ): TypedContractEvent<
-    FeeRecipientUpdatedEvent.InputTuple,
-    FeeRecipientUpdatedEvent.OutputTuple,
-    FeeRecipientUpdatedEvent.OutputObject
-  >;
-  getEvent(
-    key: "FeeSent"
-  ): TypedContractEvent<
-    FeeSentEvent.InputTuple,
-    FeeSentEvent.OutputTuple,
-    FeeSentEvent.OutputObject
+    ExternalRewardsClaimedEvent.InputTuple,
+    ExternalRewardsClaimedEvent.OutputTuple,
+    ExternalRewardsClaimedEvent.OutputObject
   >;
   getEvent(
     key: "Harvested"
@@ -611,6 +897,27 @@ export interface WeaveVault extends BaseContract {
     PausedEvent.OutputObject
   >;
   getEvent(
+    key: "SharePriceUpdated"
+  ): TypedContractEvent<
+    SharePriceUpdatedEvent.InputTuple,
+    SharePriceUpdatedEvent.OutputTuple,
+    SharePriceUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "StrategyUpdated"
+  ): TypedContractEvent<
+    StrategyUpdatedEvent.InputTuple,
+    StrategyUpdatedEvent.OutputTuple,
+    StrategyUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Transfer"
+  ): TypedContractEvent<
+    TransferEvent.InputTuple,
+    TransferEvent.OutputTuple,
+    TransferEvent.OutputObject
+  >;
+  getEvent(
     key: "Unpaused"
   ): TypedContractEvent<
     UnpausedEvent.InputTuple,
@@ -626,6 +933,17 @@ export interface WeaveVault extends BaseContract {
   >;
 
   filters: {
+    "Approval(address,address,uint256)": TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
+    Approval: TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
+
     "Deposited(address,uint256,uint256)": TypedContractEvent<
       DepositedEvent.InputTuple,
       DepositedEvent.OutputTuple,
@@ -637,26 +955,15 @@ export interface WeaveVault extends BaseContract {
       DepositedEvent.OutputObject
     >;
 
-    "FeeRecipientUpdated(address)": TypedContractEvent<
-      FeeRecipientUpdatedEvent.InputTuple,
-      FeeRecipientUpdatedEvent.OutputTuple,
-      FeeRecipientUpdatedEvent.OutputObject
+    "ExternalRewardsClaimed(uint256,uint256)": TypedContractEvent<
+      ExternalRewardsClaimedEvent.InputTuple,
+      ExternalRewardsClaimedEvent.OutputTuple,
+      ExternalRewardsClaimedEvent.OutputObject
     >;
-    FeeRecipientUpdated: TypedContractEvent<
-      FeeRecipientUpdatedEvent.InputTuple,
-      FeeRecipientUpdatedEvent.OutputTuple,
-      FeeRecipientUpdatedEvent.OutputObject
-    >;
-
-    "FeeSent(uint256)": TypedContractEvent<
-      FeeSentEvent.InputTuple,
-      FeeSentEvent.OutputTuple,
-      FeeSentEvent.OutputObject
-    >;
-    FeeSent: TypedContractEvent<
-      FeeSentEvent.InputTuple,
-      FeeSentEvent.OutputTuple,
-      FeeSentEvent.OutputObject
+    ExternalRewardsClaimed: TypedContractEvent<
+      ExternalRewardsClaimedEvent.InputTuple,
+      ExternalRewardsClaimedEvent.OutputTuple,
+      ExternalRewardsClaimedEvent.OutputObject
     >;
 
     "Harvested(uint256,uint256,uint256)": TypedContractEvent<
@@ -701,6 +1008,39 @@ export interface WeaveVault extends BaseContract {
       PausedEvent.InputTuple,
       PausedEvent.OutputTuple,
       PausedEvent.OutputObject
+    >;
+
+    "SharePriceUpdated(uint256,uint256)": TypedContractEvent<
+      SharePriceUpdatedEvent.InputTuple,
+      SharePriceUpdatedEvent.OutputTuple,
+      SharePriceUpdatedEvent.OutputObject
+    >;
+    SharePriceUpdated: TypedContractEvent<
+      SharePriceUpdatedEvent.InputTuple,
+      SharePriceUpdatedEvent.OutputTuple,
+      SharePriceUpdatedEvent.OutputObject
+    >;
+
+    "StrategyUpdated(address)": TypedContractEvent<
+      StrategyUpdatedEvent.InputTuple,
+      StrategyUpdatedEvent.OutputTuple,
+      StrategyUpdatedEvent.OutputObject
+    >;
+    StrategyUpdated: TypedContractEvent<
+      StrategyUpdatedEvent.InputTuple,
+      StrategyUpdatedEvent.OutputTuple,
+      StrategyUpdatedEvent.OutputObject
+    >;
+
+    "Transfer(address,address,uint256)": TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
+    >;
+    Transfer: TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
     >;
 
     "Unpaused(address)": TypedContractEvent<

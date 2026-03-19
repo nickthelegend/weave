@@ -36,11 +36,12 @@ async function main() {
 
   // EchelonStrategy
   const EchelonStrategy = await ethers.getContractFactory("EchelonStrategy");
-  const echelon = await EchelonStrategy.deploy(
+  const echelonMarket = "0x3ad1bf95700fab6923cdf1049bea9746c7f2ae91".toLowerCase(); // Truncated to 20 bytes for EVM
+  const echelon = await (EchelonStrategy as any).deploy(
     usdc,
+    echelonMarket,
     vaultAddr,
-    treasury,
-    "0x3ad1bf95700fab6923cdf1049bea9746c7f2ae91df2139ca57c609fba8fed95a" // USDC market
+    treasury
   );
   await echelon.waitForDeployment();
   const echelonAddr = await echelon.getAddress();

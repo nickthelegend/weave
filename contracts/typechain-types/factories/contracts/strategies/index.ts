@@ -2,5 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as blackwingStrategySol from "./BlackwingStrategy.sol";
+export * as echelonStrategySol from "./EchelonStrategy.sol";
 export * as tucanaStrategySol from "./TucanaStrategy.sol";
+export { InitiaDEXStrategy__factory } from "./InitiaDEXStrategy__factory";
 export { MockProtocol__factory } from "./MockProtocol__factory";
+export { StableLPStrategy__factory } from "./StableLPStrategy__factory";

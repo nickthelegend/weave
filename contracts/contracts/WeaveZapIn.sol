@@ -22,19 +22,21 @@ contract WeaveZapIn {
      * @dev Simplistic Zap: For now, we deposit the full USDC.
      * Roadmap v2: Split 50/50 and swap half to INIT via Initia DEX.
      */
-    function deposit(uint256 usdcAmount, address vaultAddress) external {
-        require(usdcAmount > 0, "Amount must be > 0");
+    function zapIn(address tokenIn, uint256 amountIn, address vaultAddress) external {
+        require(amountIn > 0, "Amount must be > 0");
 
         IWeaveVault vault = IWeaveVault(vaultAddress);
-        IERC20 usdc = IERC20(vault.depositToken());
+        address usdc = vault.depositToken();
+        
+        require(tokenIn == usdc, "Only USDC deposits supported in V1. INIT zap coming in V2.");
         
         // Transfer USDC from user to this contract
-        usdc.safeTransferFrom(msg.sender, address(this), usdcAmount);
+        IERC20(usdc).safeTransferFrom(msg.sender, address(this), amountIn);
         
         // Approve vault and deposit for user
-        usdc.safeIncreaseAllowance(vaultAddress, usdcAmount);
-        vault.depositFor(msg.sender, usdcAmount);
+        IERC20(usdc).safeIncreaseAllowance(vaultAddress, amountIn);
+        vault.depositFor(msg.sender, amountIn);
 
-        emit ZapDeposited(msg.sender, usdcAmount);
+        emit ZapDeposited(msg.sender, amountIn);
     }
 }

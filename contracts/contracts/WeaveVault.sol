@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -21,14 +21,14 @@ interface IInitiaDEX {
  * @title WeaveVault
  * @dev Main vault for Weave - aggregates yield on Initia.
  */
-contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
+contract WeaveVault is ERC20, ReentrancyGuard, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable depositToken;
     uint256 public totalDeposited;
-    uint256 public totalShares;
-
-    mapping(address => uint256) public userShares;
+    uint256 public maxTVL = 1_000_000 * 1e6; // $1M USDC cap
+    
+    // totalShares is now totalSupply()
     
     IWeavifyStrategy public strategy;
     address public treasury;
@@ -57,7 +57,10 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         _;
     }
 
-    constructor(address _depositToken, address _treasury, address _dex) Ownable(msg.sender) {
+    constructor(address _depositToken, address _treasury, address _dex) 
+        ERC20("Weave Yield USDC", "wUSDC") 
+        Ownable(msg.sender) 
+    {
         depositToken = IERC20(_depositToken);
         treasury = _treasury;
         keeper = msg.sender;
@@ -69,8 +72,8 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     function updateSharePrice(uint256 newPricePerShare) external onlyKeeper {
         pricePerShare = newPricePerShare;
         // Also update totalDeposited to match the new PPS for accounting
-        if (totalShares > 0) {
-            totalDeposited = (totalShares * newPricePerShare) / 1e6;
+        if (totalSupply() > 0) {
+            totalDeposited = (totalSupply() * newPricePerShare) / 1e6;
         }
         emit SharePriceUpdated(newPricePerShare, block.timestamp);
     }
@@ -85,11 +88,23 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
         emit KeeperUpdated(_keeper);
     }
 
+    function setMaxTVL(uint256 _maxTVL) external onlyOwner {
+        maxTVL = _maxTVL;
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     function setDex(address _dex) external onlyOwner {
         dex = IInitiaDEX(_dex);
     }
 
-    function deposit(uint256 amount) external {
+    function deposit(uint256 amount) external nonReentrant whenNotPaused {
         _depositFor(msg.sender, amount);
     }
 
@@ -99,12 +114,13 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
 
     function _depositFor(address user, uint256 amount) internal {
         require(amount > 0, "Amount must be > 0");
+        require(totalDeposited + amount <= maxTVL, "Cap reached");
 
         uint256 shares;
-        if (totalShares == 0) {
+        if (totalSupply() == 0) {
             shares = amount;
         } else {
-            shares = (amount * totalShares) / totalDeposited;
+            shares = (amount * totalSupply()) / totalDeposited;
         }
 
         depositToken.safeTransferFrom(msg.sender, address(this), amount);
@@ -120,26 +136,25 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
             _isDepositor[user] = true;
         }
 
-        userShares[user] += shares;
-        totalShares += shares;
+        _mint(user, shares);
         totalDeposited += amount;
 
         emit Deposited(user, amount, shares);
     }
 
-    function withdraw(uint256 shareAmount) external nonReentrant whenNotPaused {
+    function withdraw(uint256 shareAmount, uint256 minOut) external nonReentrant whenNotPaused {
         require(shareAmount > 0, "Share amount must be > 0");
-        require(userShares[msg.sender] >= shareAmount, "Insufficient shares");
+        require(balanceOf(msg.sender) >= shareAmount, "Insufficient shares");
 
-        uint256 usdcAmount = (shareAmount * totalDeposited) / totalShares;
+        uint256 usdcAmount = (shareAmount * totalDeposited) / totalSupply();
+        require(usdcAmount >= minOut, "Slippage exceeded");
 
         // Withdraw from strategy
         if (address(strategy) != address(0)) {
             strategy.withdraw(usdcAmount);
         }
 
-        userShares[msg.sender] -= shareAmount;
-        totalShares -= shareAmount;
+        _burn(msg.sender, shareAmount);
         totalDeposited -= usdcAmount;
 
         depositToken.safeTransfer(msg.sender, usdcAmount);
@@ -212,8 +227,8 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
     }
 
     function getUserValue(address user) public view returns (uint256) {
-        if (totalShares == 0) return 0;
-        return (userShares[user] * totalDeposited) / totalShares;
+        if (totalSupply() == 0) return 0;
+        return (balanceOf(user) * totalDeposited) / totalSupply();
     }
 
     // Called by keeper/vip.ts to get depositor list
@@ -227,19 +242,19 @@ contract WeaveVault is ReentrancyGuard, Ownable, Pausable {
             balances = new uint256[](count);
             for (uint256 i = 0; i < count; i++) {
                 depositors[i] = depositorsList[i];
-                balances[i] = userShares[depositors[i]];
+                balances[i] = balanceOf(depositors[i]);
             }
     }
 
     // VIP score = shares held
     function getUserScore(address user) 
         external view returns (uint256) {
-            return userShares[user];
+            return balanceOf(user);
     }
 
     function getPricePerShare() public view returns (uint256) {
-        if (totalShares == 0) return 1e6; // 1 USDC (6 decimals)
-        return (totalDeposited * 1e6) / totalShares;
+        if (totalSupply() == 0) return 1e6; // 1 USDC (6 decimals)
+        return (totalDeposited * 1e6) / totalSupply();
     }
 
     function getVaultStats() external view returns (
